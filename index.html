@@ -29,8 +29,7 @@
         }
 
         html, body {
-            /* Prevents pull-to-refresh black bars on mobile */
-            overscroll-behavior-y: none;
+            overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile */
         }
 
         body {
@@ -131,13 +130,12 @@
             position: relative;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-            /* Box-shadow transition kept; transform transition handled via JS */
-            transition: box-shadow 0.2s ease;
         }
 
+        /* Active Drag Styling */
         .book-card.dragging {
             opacity: 0.95;
-            box-shadow: 0 15px 25px rgba(0,0,0,0.9);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.9);
             z-index: 1000;
         }
 
@@ -145,6 +143,7 @@
             border: 2px dashed var(--gold-muted);
             background-color: rgba(198, 155, 109, 0.05);
             box-shadow: none;
+            transition: height 0.2s ease;
         }
 
         .book-card.read {
@@ -460,7 +459,8 @@
             localStorage.setItem('wowBooksMin', JSON.stringify(minStatus));
             
             const isAnyExpanded = Object.values(minStatus).includes(false);
-            document.body.style.overflow = isAnyExpanded ? 'hidden' : '';
+            // DO NOT use document.body.style.overflow = 'hidden' to avoid mobile render bugs
+            // Expanding a card now overlays without touching body overflow
         }
 
         function renderBooks() {
@@ -566,27 +566,32 @@
             renderBooks();
         };
 
-        // FLIP Animation Drag & Drop Logic
+        // Highly robust Mobile Drag & Drop with FLIP Shuffling
         let draggedItem = null;
         let placeholder = null;
         let startY = 0;
+        let initialRect = null;
 
         container.addEventListener('touchstart', (e) => {
             if (e.target.classList.contains('drag-handle')) {
                 draggedItem = e.target.closest('.book-card');
-                const rect = draggedItem.getBoundingClientRect();
+                initialRect = draggedItem.getBoundingClientRect();
                 
+                // 1. Create a blank space that exactly matches the card
                 placeholder = document.createElement('div');
                 placeholder.className = 'book-card placeholder';
-                placeholder.style.height = rect.height + 'px';
+                placeholder.style.height = initialRect.height + 'px';
                 
+                // 2. Insert blank space exactly where card is
                 container.insertBefore(placeholder, draggedItem);
                 
+                // 3. Make dragged item float absolutely above the exact spot
                 draggedItem.style.position = 'fixed';
-                draggedItem.style.top = rect.top + 'px';
-                draggedItem.style.left = rect.left + 'px';
-                draggedItem.style.width = rect.width + 'px';
-                draggedItem.style.pointerEvents = 'none';
+                draggedItem.style.top = initialRect.top + 'px';
+                draggedItem.style.left = initialRect.left + 'px';
+                draggedItem.style.width = initialRect.width + 'px';
+                draggedItem.style.height = initialRect.height + 'px';
+                draggedItem.style.margin = '0';
                 draggedItem.classList.add('dragging');
                 
                 startY = e.touches[0].clientY;
@@ -595,71 +600,79 @@
 
         container.addEventListener('touchmove', (e) => {
             if (!draggedItem) return;
-            e.preventDefault();
+            e.preventDefault(); // This strictly prevents scrolling/black bars while dragging
             
-            const touch = e.touches[0];
-            const deltaY = touch.clientY - startY;
+            const touchY = e.touches[0].clientY;
+            const deltaY = touchY - startY;
             draggedItem.style.transform = `translateY(${deltaY}px)`;
             
-            const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
-            if (elementUnderFinger) {
-                const targetCard = elementUnderFinger.closest('.book-card:not(.dragging):not(.placeholder)');
-                if (targetCard) {
-                    const rect = targetCard.getBoundingClientRect();
-                    const next = (touch.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                    const nextSibling = next ? targetCard.nextSibling : targetCard;
-
-                    // If the placeholder needs to move to a new slot
-                    if (placeholder.nextSibling !== nextSibling) {
-                        
-                        // FLIP: Calculate current positions of all static cards
-                        const staticCards = Array.from(container.querySelectorAll('.book-card:not(.dragging)'));
-                        const rects = new Map();
-                        staticCards.forEach(c => rects.set(c, c.getBoundingClientRect()));
-                        
-                        // Move the placeholder
-                        container.insertBefore(placeholder, nextSibling);
-                        
-                        // FLIP: Animate cards from old positions to new ones
-                        staticCards.forEach(c => {
-                            const oldRect = rects.get(c);
-                            const newRect = c.getBoundingClientRect();
-                            const moveY = oldRect.top - newRect.top;
-                            
-                            if (moveY !== 0) {
-                                c.style.transform = `translateY(${moveY}px)`;
-                                c.style.transition = 'none';
-                                
-                                requestAnimationFrame(() => {
-                                    requestAnimationFrame(() => {
-                                        c.style.transform = '';
-                                        c.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                                    });
-                                });
-                            }
-                        });
-                    }
+            // Calculate where we are hovering
+            const cards = Array.from(container.querySelectorAll('.book-card:not(.dragging):not(.placeholder)'));
+            let nextSibling = null;
+            
+            for (let card of cards) {
+                const box = card.getBoundingClientRect();
+                const boxCenter = box.top + box.height / 2;
+                if (touchY < boxCenter) {
+                    nextSibling = card;
+                    break;
                 }
+            }
+
+            // If the placeholder needs to jump to a new position, animate the jump!
+            if (placeholder.nextSibling !== nextSibling) {
+                // Read current positions
+                const staticCards = Array.from(container.querySelectorAll('.book-card:not(.dragging)'));
+                const rects = new Map();
+                staticCards.forEach(c => rects.set(c, c.getBoundingClientRect()));
+                
+                // Move placeholder
+                if (nextSibling) {
+                    container.insertBefore(placeholder, nextSibling);
+                } else {
+                    container.appendChild(placeholder);
+                }
+                
+                // FLIP: Play animation for smooth shuffle
+                staticCards.forEach(c => {
+                    const oldRect = rects.get(c);
+                    const newRect = c.getBoundingClientRect();
+                    const moveY = oldRect.top - newRect.top;
+                    
+                    if (moveY !== 0) {
+                        c.style.transition = 'none';
+                        c.style.transform = `translateY(${moveY}px)`;
+                        
+                        // Force browser reflow to register the start position
+                        c.offsetHeight; 
+                        
+                        c.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                        c.style.transform = 'translateY(0)';
+                    }
+                });
             }
         }, {passive: false});
 
         container.addEventListener('touchend', (e) => {
             if (!draggedItem) return;
             
+            // Revert DOM back to normal flow
             container.insertBefore(draggedItem, placeholder);
-            
             placeholder.remove();
             placeholder = null;
             
+            // Clear inline drag styles
             draggedItem.style.position = '';
             draggedItem.style.top = '';
             draggedItem.style.left = '';
             draggedItem.style.width = '';
+            draggedItem.style.height = '';
+            draggedItem.style.margin = '';
             draggedItem.style.transform = '';
-            draggedItem.style.pointerEvents = '';
             draggedItem.classList.remove('dragging');
             draggedItem = null;
             
+            // Save newly customized order
             const currentCards = Array.from(container.querySelectorAll('.book-card:not(.placeholder)'));
             const newOrder = currentCards.map(card => parseInt(card.dataset.id));
             localStorage.setItem('wowBooksOrder', JSON.stringify(newOrder));
