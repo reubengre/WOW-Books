@@ -15,8 +15,8 @@
             --gold-accent: #f8b700;
             --gold-muted: #c69b6d;
             --gold-border: #4a3a25;
-            --read-bg: rgba(13, 26, 19, 0.85);
-            --read-border: #224d31;
+            --read-bg: rgba(10, 31, 20, 0.95);
+            --read-border: #2ecc71;
             --danger: #7a1d1d;
             --ui-font: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
         }
@@ -41,6 +41,8 @@
             padding: 16px;
             line-height: 1.5;
             min-height: 100vh;
+            max-width: 1400px;
+            margin: 0 auto;
         }
 
         header {
@@ -77,6 +79,9 @@
             flex-direction: column;
             gap: 12px;
             margin-bottom: 24px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .button-group {
@@ -114,12 +119,21 @@
             font-weight: bold;
         }
 
+        /* --- DESKTOP GRID LAYOUT --- */
         .book-list {
             display: flex;
             flex-direction: column;
             gap: 16px;
             padding-bottom: 40px;
             position: relative;
+        }
+
+        @media (min-width: 768px) {
+            .book-list {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(480px, 1fr));
+                gap: 20px;
+            }
         }
 
         .book-card {
@@ -131,24 +145,48 @@
             position: relative;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
-        /* Ghost element styling (the one attached to your finger) */
         .book-card.ghost {
             position: fixed;
             z-index: 9999;
             opacity: 0.95;
             box-shadow: 0 25px 35px rgba(0,0,0,0.9);
-            pointer-events: none; /* Let touch events pass through to elements below */
+            pointer-events: none;
         }
 
-        /* Placeholder styling (the invisible gap in the list) */
         .book-card.placeholder {
             opacity: 0 !important; 
         }
 
+        /* --- READ STATUS VISUAL OVERHAUL --- */
         .book-card.read {
-            border-color: var(--read-border);
+            border: 2px solid var(--read-border);
+            box-shadow: 0 0 12px rgba(46, 204, 113, 0.3);
+        }
+
+        /* Read Banner Stamp */
+        .read-stamp {
+            display: none;
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: #2ecc71;
+            color: #0b0c10;
+            font-family: var(--ui-font);
+            font-weight: bold;
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            z-index: 5;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+        }
+
+        .book-card.read .read-stamp {
+            display: block;
         }
 
         .bg-blur {
@@ -162,7 +200,7 @@
         }
 
         .book-card.read .bg-blur {
-            filter: blur(25px) brightness(0.15) sepia(0.5) hue-rotate(90deg);
+            filter: blur(25px) brightness(0.2) saturate(1.2);
         }
 
         .book-cover, .book-info {
@@ -358,9 +396,10 @@
             border-color: #f8b700;
         }
         .book-card.read .btn-read { 
-            background: linear-gradient(to bottom, #2b6140, #1c452b); 
-            color: #a3d9b8; 
-            border-color: #3e8a5a;
+            background: linear-gradient(to bottom, #2ecc71, #27ae60); 
+            color: #ffffff; 
+            border-color: #2ecc71;
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
         }
 
         .btn-hide { 
@@ -475,6 +514,7 @@
                     card.onclick = (e) => handleCardClick(e, book.id);
                     
                     card.innerHTML = `
+                        <div class="read-stamp">Read</div>
                         <div class="bg-blur" style="background-image: url('${book.cover}')"></div>
                         <div class="book-cover">
                             <img src="${book.cover}" alt="${book.title} Cover" onerror="this.onerror=null; this.src='https://placehold.co/130x195/15161c/c69b6d?text=No+Cover';">
@@ -568,7 +608,6 @@
             draggedItem = handle.closest('.book-card');
             const rect = draggedItem.getBoundingClientRect();
             
-            // 1. Create the floating ghost that follows the finger
             ghostItem = draggedItem.cloneNode(true);
             ghostItem.classList.add('ghost');
             ghostItem.style.top = rect.top + 'px';
@@ -576,7 +615,6 @@
             ghostItem.style.width = rect.width + 'px';
             document.body.appendChild(ghostItem);
 
-            // 2. The original item stays in the DOM but becomes an invisible placeholder
             draggedItem.classList.add('placeholder');
             
             startY = e.touches[0].clientY;
@@ -592,7 +630,6 @@
             const touchY = e.touches[0].clientY;
             ghostItem.style.top = (touchY - touchOffsetY) + 'px';
             
-            // Briefly hide the ghost so we can detect what card is underneath the finger
             ghostItem.style.display = 'none';
             const elementUnderFinger = document.elementFromPoint(e.touches[0].clientX, touchY);
             ghostItem.style.display = '';
@@ -601,15 +638,11 @@
             
             const targetCard = elementUnderFinger.closest('.book-card:not(.ghost)');
             
-            // If dragging over a new card that isn't the placeholder
             if (targetCard && targetCard !== draggedItem) {
-                
-                // FLIP Step 1: Record initial positions of all cards
                 const staticCards = Array.from(container.querySelectorAll('.book-card:not(.ghost)'));
                 const oldRects = new Map();
                 staticCards.forEach(c => oldRects.set(c, c.getBoundingClientRect()));
                 
-                // Move the invisible placeholder in the DOM
                 const targetRect = targetCard.getBoundingClientRect();
                 const targetCenter = targetRect.top + targetRect.height / 2;
                 
@@ -619,23 +652,17 @@
                     container.insertBefore(draggedItem, targetCard);
                 }
                 
-                // FLIP Step 2: Animate cards smoothly to their new positions
                 staticCards.forEach(c => {
-                    if (c === draggedItem) return; // Don't animate the invisible gap
+                    if (c === draggedItem) return;
                     
                     const newRect = c.getBoundingClientRect();
                     const oldRect = oldRects.get(c);
                     const moveY = oldRect.top - newRect.top;
                     
                     if (moveY !== 0) {
-                        // Instantly reverse the move visually
                         c.style.transition = 'none';
                         c.style.transform = `translateY(${moveY}px)`;
-                        
-                        // Force the browser to render this reversed state
                         c.offsetHeight; 
-                        
-                        // Smoothly glide into the new real position
                         c.style.transition = 'transform 0.3s ease';
                         c.style.transform = 'translateY(0)';
                     }
@@ -646,7 +673,6 @@
         container.addEventListener('touchend', (e) => {
             if (!ghostItem) return;
             
-            // Cleanup
             ghostItem.remove();
             ghostItem = null;
             
@@ -654,7 +680,6 @@
             draggedItem = null;
             document.body.style.overflow = '';
             
-            // Save newly ordered layout
             const currentCards = Array.from(container.querySelectorAll('.book-card'));
             const newOrder = currentCards.map(card => parseInt(card.dataset.id));
             localStorage.setItem('wowBooksOrder', JSON.stringify(newOrder));
