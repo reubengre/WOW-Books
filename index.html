@@ -3,8 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- This line bypasses the image hotlink protection -->
-    <meta name="referrer" content="no-referrer">
     <title>WoW Lore Reading Library</title>
     <style>
         :root {
@@ -248,7 +246,7 @@
             { id: 24, title: "Shadows Rising", category: "The MMO Era", rating: "3.85", synopsis: "The Horde and Alliance hunt for Sylvanas and Nathanos in the aftermath of the Fourth War.", cover: "https://static.wikia.nocookie.net/wowpedia/images/e/ef/Shadows_Rising.jpg" },
             { id: 25, title: "Sylvanas", category: "The MMO Era", rating: "4.32", synopsis: "An intimate look into the long afterlife of the Banshee Queen and her motivations leading into the Shadowlands.", cover: "https://static.wikia.nocookie.net/wowpedia/images/9/91/Sylvanas_novel.jpg" },
             { id: 26, title: "War of the Scaleborn", category: "The MMO Era", rating: "4.10", synopsis: "An ancient history of the conflict between the empowered Dragon Aspects and the elemental Primalists.", cover: "https://static.wikia.nocookie.net/wowpedia/images/d/df/War_of_the_Scaleborn_cover.jpg" },
-            { id: 27, title: "Blood Ties", category: "The MMO Era", rating: "TBD", synopsis: "Sets the stage for the Midnight expansion as the void forces prepare to strike at the heart of Azeroth.", cover: "https://static.wikia.nocookie.net/wowpedia/images/3/33/The_Voices_Within.jpg" } // Using The Voices Within cover as Blood Ties is unpublished
+            { id: 27, title: "Blood Ties", category: "The MMO Era", rating: "TBD", synopsis: "Sets the stage for the Midnight expansion as the void forces prepare to strike at the heart of Azeroth.", cover: "https://static.wikia.nocookie.net/wowpedia/images/3/33/The_Voices_Within.jpg" }
         ];
 
         let readStatus = JSON.parse(localStorage.getItem('wowBooksRead')) || {};
@@ -278,12 +276,15 @@
                     const isRead = readStatus[book.id];
                     const isMin = minStatus[book.id];
                     
+                    // Wrapping the original URL in the proxy
+                    const proxyCoverUrl = `https://wsrv.nl/?url=${encodeURIComponent(book.cover)}`;
+                    
                     const card = document.createElement('div');
                     card.className = `book-card ${isRead ? 'read' : ''} ${isMin ? 'minimized' : ''}`;
                     
                     card.innerHTML = `
                         <div class="book-cover">
-                            <img src="${book.cover}" alt="Cover">
+                            <img src="${proxyCoverUrl}" alt="Cover">
                         </div>
                         <div class="book-info">
                             <div class="card-header">
