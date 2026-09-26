@@ -128,14 +128,20 @@
             position: relative;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-            transition: transform 0.1s ease, box-shadow 0.1s ease;
+            transition: box-shadow 0.2s ease;
         }
 
+        /* Styles active only while physically dragging */
         .book-card.dragging {
-            opacity: 0.8;
-            transform: scale(1.02);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
-            z-index: 100;
+            opacity: 0.95;
+            box-shadow: 0 15px 25px rgba(0,0,0,0.9);
+            z-index: 1000;
+        }
+
+        .book-card.placeholder {
+            border: 2px dashed var(--gold-muted);
+            background-color: rgba(198, 155, 109, 0.05);
+            box-shadow: none;
         }
 
         .book-card.read {
@@ -171,6 +177,14 @@
             display: none;
         }
 
+        .book-card.minimized .book-title {
+            font-size: 1.5rem; /* Larger font */
+            color: #fce883; /* WoW Cover Art Gold */
+            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
+            margin-top: 8px;
+            line-height: 1.1;
+        }
+
         /* Expanded State: Smaller Cover + Full Details */
         .book-card:not(.minimized) .book-cover {
             width: 90px;
@@ -202,8 +216,9 @@
             align-items: center;
             justify-content: center;
             opacity: 0.6;
+            touch-action: none;
         }
-        
+
         .drag-handle:active {
             cursor: grabbing;
         }
@@ -236,6 +251,7 @@
             color: var(--gold-accent);
             margin-bottom: 4px;
             line-height: 1.2;
+            transition: all 0.3s ease;
         }
 
         .book-rating {
@@ -312,14 +328,11 @@
 
     <script>
         let books = [
-            // The Foundations
             { id: 1, title: "Rise of the Horde", category: "The Foundations", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. Details their tragic fall into bloodlust orchestrated by the Burning Legion.", cover: "Images/rise-of-the-horde.jpg" },
             { id: 2, title: "The Last Guardian", category: "The Foundations", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence. His apprentice, Khadgar, must uncover his secrets as the Horde pours into Azeroth.", cover: "Images/the-last-guardian.jpg" },
             { id: 3, title: "Tides of Darkness", category: "The Foundations", rating: "4.15", synopsis: "Following the fall of Stormwind, survivors flee to Lordaeron to forge a grand Alliance and halt the Orcish Horde's march.", cover: "Images/tides-of-darkness.jpg" },
             { id: 4, title: "Beyond the Dark Portal", category: "The Foundations", rating: "4.13", synopsis: "The Alliance expedition pushes through the portal into Draenor to stop the orcish threat at its source.", cover: "Images/beyond-the-dark-portal.jpg" },
             { id: 5, title: "Day of the Dragon", category: "The Foundations", rating: "4.05", synopsis: "Set after the Second War, focusing on the mage Rhonin and the liberation of the Dragonqueen Alexstrasza from the Dragonmaw Clan.", cover: "Images/day-of-the-dragon.jpg" },
-            
-            // Time Travel & Third War
             { id: 6, title: "The Well of Eternity", category: "Time Travel & 3rd War", rating: "4.20", synopsis: "Modern heroes are cast 10,000 years into the past during the Burning Legion's first invasion of Azeroth.", cover: "Images/the-well-of-eternity.jpg" },
             { id: 7, title: "The Demon Soul", category: "Time Travel & 3rd War", rating: "4.22", synopsis: "Part two of the War of the Ancients. Deathwing's betrayal is revealed as the defenders of Azeroth struggle to survive.", cover: "Images/the-demon-soul.jpg" },
             { id: 8, title: "The Sundering", category: "Time Travel & 3rd War", rating: "4.26", synopsis: "The conclusion to the War of the Ancients. The Well of Eternity collapses, reshaping the continents of Azeroth forever.", cover: "Images/the-sundering.jpg" },
@@ -327,8 +340,6 @@
             { id: 10, title: "Of Blood and Honor", category: "Time Travel & 3rd War", rating: "4.03", synopsis: "The paladin Tirion Fordring risks everything when he makes a fateful connection with the honorable orc Eitrigg.", cover: "Images/of-blood-and-honor.jpg" },
             { id: 11, title: "Arthas: Rise of the Lich King", category: "Time Travel & 3rd War", rating: "4.35", synopsis: "Prince Arthas Menethil makes terrible sacrifices to save his people, a tragic path that leads him to the Frozen Throne.", cover: "Images/arthas-rise-of-the-lich-king.jpg" },
             { id: 12, title: "Illidan", category: "Time Travel & 3rd War", rating: "4.24", synopsis: "Follows Illidan Stormrage from his release in Warcraft III through his rule over Outland.", cover: "Images/illidan.jpg" },
-            
-            // The MMO Era
             { id: 13, title: "Cycle of Hatred", category: "The MMO Era", rating: "3.55", synopsis: "Set shortly before Vanilla WoW, exploring the fragile peace between the Horde and Alliance in Kalimdor.", cover: "Images/cycle-of-hatred.jpg" },
             { id: 14, title: "Night of the Dragon", category: "The MMO Era", rating: "3.95", synopsis: "A sequel to Day of the Dragon, returning to Grim Batol to face the sinister Twilight Dragonflight.", cover: "Images/night-of-the-dragon.jpg" },
             { id: 15, title: "Stormrage", category: "The MMO Era", rating: "3.90", synopsis: "Malfurion Stormrage is trapped in the Emerald Nightmare, and his allies must fight to awaken him before the corruption spreads.", cover: "Images/stormrage.jpg" },
@@ -351,7 +362,6 @@
         let minStatus = JSON.parse(localStorage.getItem('wowBooksMin')) || {};
         let customOrder = JSON.parse(localStorage.getItem('wowBooksOrder')) || [];
 
-        // Apply saved custom order if it exists
         if (customOrder.length > 0) {
             books.sort((a, b) => {
                 let indexA = customOrder.indexOf(a.id);
@@ -362,7 +372,6 @@
             });
         }
 
-        // Default all books to minimized (large cover view) on first load
         books.forEach(book => {
             if (minStatus[book.id] === undefined) {
                 minStatus[book.id] = true;
@@ -429,7 +438,6 @@
         }
 
         window.handleCardClick = function(event, id) {
-            // Do not toggle if the user clicked a button or the drag handle
             if (event.target.tagName === 'BUTTON' || event.target.closest('button') || event.target.classList.contains('drag-handle')) {
                 return;
             }
@@ -467,14 +475,34 @@
             renderBooks();
         };
 
-        // Custom Touch Drag & Drop Reordering
+        // Smooth Drag & Drop Animation Logic
         let draggedItem = null;
+        let placeholder = null;
+        let startY = 0;
 
         container.addEventListener('touchstart', (e) => {
             if (e.target.classList.contains('drag-handle')) {
                 draggedItem = e.target.closest('.book-card');
+                const rect = draggedItem.getBoundingClientRect();
+                
+                // Create a temporary placeholder to keep the list layout stable
+                placeholder = document.createElement('div');
+                placeholder.className = 'book-card placeholder';
+                placeholder.style.height = rect.height + 'px';
+                
+                // Insert placeholder
+                draggedItem.parentNode.insertBefore(placeholder, draggedItem);
+                
+                // Float the dragged item to follow the finger
+                draggedItem.style.position = 'fixed';
+                draggedItem.style.top = rect.top + 'px';
+                draggedItem.style.left = rect.left + 'px';
+                draggedItem.style.width = rect.width + 'px';
+                draggedItem.style.pointerEvents = 'none'; // Ensure finger targets elements behind the card
                 draggedItem.classList.add('dragging');
-                document.body.style.overflow = 'hidden'; // Stop page scrolling
+                
+                startY = e.touches[0].clientY;
+                document.body.style.overflow = 'hidden';
             }
         }, {passive: false});
 
@@ -483,30 +511,45 @@
             e.preventDefault();
             
             const touch = e.touches[0];
-            const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
+            const deltaY = touch.clientY - startY;
+            draggedItem.style.transform = `translateY(${deltaY}px)`;
             
+            const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
             if (elementUnderFinger) {
-                const targetCard = elementUnderFinger.closest('.book-card');
-                if (targetCard && targetCard !== draggedItem) {
+                const targetCard = elementUnderFinger.closest('.book-card:not(.dragging):not(.placeholder)');
+                if (targetCard) {
                     const rect = targetCard.getBoundingClientRect();
                     const next = (touch.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                    container.insertBefore(draggedItem, next ? targetCard.nextSibling : targetCard);
+                    container.insertBefore(placeholder, next ? targetCard.nextSibling : targetCard);
                 }
             }
         }, {passive: false});
 
         container.addEventListener('touchend', (e) => {
             if (!draggedItem) return;
+            
+            // Drop item into placeholder location
+            container.insertBefore(draggedItem, placeholder);
+            
+            // Cleanup
+            placeholder.remove();
+            placeholder = null;
+            
+            draggedItem.style.position = '';
+            draggedItem.style.top = '';
+            draggedItem.style.left = '';
+            draggedItem.style.width = '';
+            draggedItem.style.transform = '';
+            draggedItem.style.pointerEvents = '';
             draggedItem.classList.remove('dragging');
             draggedItem = null;
             document.body.style.overflow = '';
             
-            // Save new order to array and localStorage
-            const currentCards = Array.from(container.querySelectorAll('.book-card'));
+            // Save newly swapped order
+            const currentCards = Array.from(container.querySelectorAll('.book-card:not(.placeholder)'));
             const newOrder = currentCards.map(card => parseInt(card.dataset.id));
             localStorage.setItem('wowBooksOrder', JSON.stringify(newOrder));
             
-            // Re-sort the main books array so search/filter respects it
             books.sort((a, b) => {
                 let indexA = newOrder.indexOf(a.id);
                 let indexB = newOrder.indexOf(b.id);
@@ -516,7 +559,6 @@
             });
         });
 
-        // Event listeners
         searchInput.addEventListener('input', renderBooks);
         renderBooks();
 
