@@ -7,9 +7,9 @@
   "theme_color": "#c69b6d",
   "icons": [
     {
-      "src": "Images/rise-of-the-horde.jpg",
-      "sizes": "512x512",
-      "type": "image/jpeg"
+      "src": "Images/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
     }
   ]
 }
