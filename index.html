@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WoW Library</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#c69b6d">
@@ -29,7 +29,7 @@
         }
 
         html, body {
-            overscroll-behavior-y: none; /* Prevents pull-to-refresh on mobile */
+            overscroll-behavior-y: none;
         }
 
         body {
@@ -119,6 +119,7 @@
             flex-direction: column;
             gap: 16px;
             padding-bottom: 40px;
+            position: relative;
         }
 
         .book-card {
@@ -130,27 +131,27 @@
             position: relative;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            transition: transform 0.2s ease;
         }
 
-        /* Active Drag Styling */
         .book-card.dragging {
             opacity: 0.95;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.9);
+            box-shadow: 0 20px 30px rgba(0,0,0,0.9);
             z-index: 1000;
+            transition: none; /* Disable transition while following finger */
         }
 
         .book-card.placeholder {
             border: 2px dashed var(--gold-muted);
             background-color: rgba(198, 155, 109, 0.05);
             box-shadow: none;
-            transition: height 0.2s ease;
+            visibility: visible;
         }
 
         .book-card.read {
             border-color: var(--read-border);
         }
 
-        /* Blurred Background Overlay */
         .bg-blur {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -185,7 +186,7 @@
             object-fit: cover;
         }
 
-        /* --- MINIMIZED STATE (List View) --- */
+        /* MINIMIZED STATE */
         .book-card.minimized .book-cover {
             width: 130px;
             height: 195px;
@@ -202,7 +203,7 @@
             margin-top: 8px;
         }
 
-        /* --- UNMINIMIZED STATE (Full Screen Modal) --- */
+        /* UNMINIMIZED STATE (Full Screen) */
         .book-card:not(.minimized) {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -275,7 +276,6 @@
             opacity: 0.6;
             touch-action: none;
         }
-        .drag-handle:active { cursor: grabbing; }
 
         .header-text { flex-grow: 1; }
 
@@ -301,7 +301,6 @@
             font-family: var(--ui-font);
             font-weight: bold;
             text-shadow: 0 2px 6px rgba(0,0,0,0.9);
-            transition: all 0.2s ease;
         }
 
         .book-metadata {
@@ -449,7 +448,6 @@
         });
 
         let allMinimized = true;
-
         const container = document.getElementById('bookContainer');
         const searchInput = document.getElementById('searchInput');
 
@@ -457,10 +455,6 @@
             localStorage.setItem('wowBooksRead', JSON.stringify(readStatus));
             localStorage.setItem('wowBooksHidden', JSON.stringify(hiddenStatus));
             localStorage.setItem('wowBooksMin', JSON.stringify(minStatus));
-            
-            const isAnyExpanded = Object.values(minStatus).includes(false);
-            // DO NOT use document.body.style.overflow = 'hidden' to avoid mobile render bugs
-            // Expanding a card now overlays without touching body overflow
         }
 
         function renderBooks() {
@@ -495,18 +489,14 @@
                                 </div>
                                 <div class="card-indicator">${isMin ? '+' : '✕'}</div>
                             </div>
-                            
                             <div class="book-metadata">
                                 <div>Author: <br><span>${book.author}</span></div>
                                 <div>Published: <br><span>${book.date}</span></div>
                             </div>
-                            
                             <div class="book-rating">
                                 <span class="star">★</span> ${book.rating} / 5.00
                             </div>
-                            
                             <div class="book-synopsis">${book.synopsis}</div>
-                            
                             <div class="book-actions">
                                 <button class="action-btn btn-read" onclick="event.stopPropagation(); toggleRead(${book.id})">
                                     ${isRead ? '✓ Read' : 'Mark as Read'}
@@ -566,47 +556,40 @@
             renderBooks();
         };
 
-        // Highly robust Mobile Drag & Drop with FLIP Shuffling
+        // Simplified, robust DOM-based drag and drop for mobile
         let draggedItem = null;
         let placeholder = null;
-        let startY = 0;
-        let initialRect = null;
+        let touchOffsetY = 0;
 
         container.addEventListener('touchstart', (e) => {
             if (e.target.classList.contains('drag-handle')) {
                 draggedItem = e.target.closest('.book-card');
-                initialRect = draggedItem.getBoundingClientRect();
+                const rect = draggedItem.getBoundingClientRect();
                 
-                // 1. Create a blank space that exactly matches the card
+                touchOffsetY = e.touches[0].clientY - rect.top;
+                
                 placeholder = document.createElement('div');
                 placeholder.className = 'book-card placeholder';
-                placeholder.style.height = initialRect.height + 'px';
+                placeholder.style.height = rect.height + 'px';
                 
-                // 2. Insert blank space exactly where card is
                 container.insertBefore(placeholder, draggedItem);
                 
-                // 3. Make dragged item float absolutely above the exact spot
                 draggedItem.style.position = 'fixed';
-                draggedItem.style.top = initialRect.top + 'px';
-                draggedItem.style.left = initialRect.left + 'px';
-                draggedItem.style.width = initialRect.width + 'px';
-                draggedItem.style.height = initialRect.height + 'px';
+                draggedItem.style.top = (e.touches[0].clientY - touchOffsetY) + 'px';
+                draggedItem.style.left = rect.left + 'px';
+                draggedItem.style.width = rect.width + 'px';
                 draggedItem.style.margin = '0';
                 draggedItem.classList.add('dragging');
-                
-                startY = e.touches[0].clientY;
             }
         }, {passive: false});
 
         container.addEventListener('touchmove', (e) => {
             if (!draggedItem) return;
-            e.preventDefault(); // This strictly prevents scrolling/black bars while dragging
+            e.preventDefault(); 
             
             const touchY = e.touches[0].clientY;
-            const deltaY = touchY - startY;
-            draggedItem.style.transform = `translateY(${deltaY}px)`;
+            draggedItem.style.top = (touchY - touchOffsetY) + 'px';
             
-            // Calculate where we are hovering
             const cards = Array.from(container.querySelectorAll('.book-card:not(.dragging):not(.placeholder)'));
             let nextSibling = null;
             
@@ -618,61 +601,31 @@
                     break;
                 }
             }
-
-            // If the placeholder needs to jump to a new position, animate the jump!
+            
             if (placeholder.nextSibling !== nextSibling) {
-                // Read current positions
-                const staticCards = Array.from(container.querySelectorAll('.book-card:not(.dragging)'));
-                const rects = new Map();
-                staticCards.forEach(c => rects.set(c, c.getBoundingClientRect()));
-                
-                // Move placeholder
                 if (nextSibling) {
                     container.insertBefore(placeholder, nextSibling);
                 } else {
                     container.appendChild(placeholder);
                 }
-                
-                // FLIP: Play animation for smooth shuffle
-                staticCards.forEach(c => {
-                    const oldRect = rects.get(c);
-                    const newRect = c.getBoundingClientRect();
-                    const moveY = oldRect.top - newRect.top;
-                    
-                    if (moveY !== 0) {
-                        c.style.transition = 'none';
-                        c.style.transform = `translateY(${moveY}px)`;
-                        
-                        // Force browser reflow to register the start position
-                        c.offsetHeight; 
-                        
-                        c.style.transition = 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)';
-                        c.style.transform = 'translateY(0)';
-                    }
-                });
             }
         }, {passive: false});
 
         container.addEventListener('touchend', (e) => {
             if (!draggedItem) return;
             
-            // Revert DOM back to normal flow
             container.insertBefore(draggedItem, placeholder);
             placeholder.remove();
             placeholder = null;
             
-            // Clear inline drag styles
             draggedItem.style.position = '';
             draggedItem.style.top = '';
             draggedItem.style.left = '';
             draggedItem.style.width = '';
-            draggedItem.style.height = '';
             draggedItem.style.margin = '';
-            draggedItem.style.transform = '';
             draggedItem.classList.remove('dragging');
             draggedItem = null;
             
-            // Save newly customized order
             const currentCards = Array.from(container.querySelectorAll('.book-card:not(.placeholder)'));
             const newOrder = currentCards.map(card => parseInt(card.dataset.id));
             localStorage.setItem('wowBooksOrder', JSON.stringify(newOrder));
@@ -692,9 +645,7 @@
         // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then((reg) => console.log('Service Worker registered!'))
-                    .catch((err) => console.log('Service Worker registration failed:'));
+                navigator.serviceWorker.register('./sw.js');
             });
         }
     </script>
