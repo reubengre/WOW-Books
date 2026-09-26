@@ -41,6 +41,8 @@
             min-height: 100vh;
             max-width: 1400px;
             margin: 0 auto;
+            display: flex;
+            flex-direction: column;
         }
 
         header {
@@ -80,6 +82,7 @@
             max-width: 600px;
             margin-left: auto;
             margin-right: auto;
+            width: 100%;
         }
 
         .button-group {
@@ -123,6 +126,7 @@
             gap: 16px;
             padding-bottom: 40px;
             position: relative;
+            flex-grow: 1;
         }
 
         @media (min-width: 768px) {
@@ -415,6 +419,26 @@
             border-color: #a33535;
         }
 
+        /* --- SUBTLE FOOTER & SUPPORT LINK --- */
+        footer.app-footer {
+            text-align: center;
+            padding: 24px 0 12px 0;
+            margin-top: auto;
+            border-top: 1px solid rgba(198, 155, 109, 0.15);
+        }
+
+        .bmc-link {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-family: var(--ui-font);
+            transition: color 0.2s ease;
+        }
+
+        .bmc-link:hover {
+            color: var(--gold-accent);
+        }
+
     </style>
 </head>
 <body>
@@ -433,6 +457,10 @@
     </div>
 
     <main class="book-list" id="bookContainer"></main>
+
+    <footer class="app-footer">
+        <a href="https://buymeacoffee.com/reubengr" target="_blank" class="bmc-link">☕ Support this project</a>
+    </footer>
 
     <script>
         const colorSilver = "#c0c5ce";
