@@ -228,6 +228,7 @@
             height: 195px;
         }
         .book-card.minimized .book-synopsis,
+        .book-card.minimized .book-preview-section,
         .book-card.minimized .book-actions,
         .book-card.minimized .book-rating,
         .book-card.minimized .book-metadata {
@@ -366,9 +367,56 @@
             font-size: 1rem;
             color: #d1d1d1;
             margin-bottom: 16px;
-            flex-grow: 1;
             line-height: 1.6;
             text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        /* --- PREVIEW DROPDOWN STYLES --- */
+        .book-preview-section {
+            margin-bottom: 16px;
+            border-top: 1px solid rgba(198, 155, 109, 0.2);
+            border-bottom: 1px solid rgba(198, 155, 109, 0.2);
+            padding: 12px 0;
+        }
+
+        .book-preview-section summary {
+            color: var(--gold-accent);
+            font-family: var(--ui-font);
+            font-size: 0.95rem;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: bold;
+            list-style: none; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .book-preview-section summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .book-preview-section summary::after {
+            content: '▼';
+            font-size: 0.75rem;
+            transition: transform 0.2s ease;
+        }
+
+        .book-preview-section[open] summary::after {
+            transform: rotate(180deg);
+        }
+
+        .preview-text {
+            margin-top: 16px;
+            color: #b3b6bd;
+            font-size: 0.95rem;
+            line-height: 1.7;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 16px;
+            border-left: 3px solid var(--gold-muted);
+            border-radius: 0 4px 4px 0;
+            white-space: pre-wrap;
         }
 
         .book-actions {
@@ -419,7 +467,6 @@
             border-color: #a33535;
         }
 
-        /* --- SUBTLE FOOTER & SUPPORT LINK --- */
         footer.app-footer {
             text-align: center;
             padding: 24px 0 12px 0;
@@ -471,33 +518,140 @@
         const tag = "reubengr-20";
 
         let books = [
-            { id: 1, title: "Rise of the Horde", titleColor: colorSilver, category: "The Foundations", author: "Christie Golden", date: "Dec 2006", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. Details their tragic fall into bloodlust orchestrated by the Burning Legion.", cover: "Images/rise-of-the-horde.jpg", buyUrl: `https://www.amazon.com/s?k=Rise+of+the+Horde+Christie+Golden&tag=${tag}` },
-            { id: 2, title: "The Last Guardian", titleColor: colorSilver, category: "The Foundations", author: "Jeff Grubb", date: "Dec 2001", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence. His apprentice, Khadgar, must uncover his secrets as the Horde pours into Azeroth.", cover: "Images/the-last-guardian.jpg", buyUrl: `https://www.amazon.com/s?k=The+Last+Guardian+Jeff+Grubb&tag=${tag}` },
-            { id: 3, title: "Tides of Darkness", titleColor: colorGold, category: "The Foundations", author: "Aaron Rosenberg", date: "Aug 2007", rating: "4.15", synopsis: "Following the fall of Stormwind, survivors flee to Lordaeron to forge a grand Alliance and halt the Orcish Horde's march.", cover: "Images/tides-of-darkness.jpg", buyUrl: `https://www.amazon.com/s?k=Tides+of+Darkness+Aaron+Rosenberg&tag=${tag}` },
-            { id: 4, title: "Beyond the Dark Portal", titleColor: colorGold, category: "The Foundations", author: "Aaron Rosenberg & Christie Golden", date: "Apr 2008", rating: "4.13", synopsis: "The Alliance expedition pushes through the portal into Draenor to stop the orcish threat at its source.", cover: "Images/beyond-the-dark-portal.jpg", buyUrl: `https://www.amazon.com/s?k=Beyond+the+Dark+Portal+Aaron+Rosenberg&tag=${tag}` },
-            { id: 5, title: "Day of the Dragon", titleColor: colorGold, category: "The Foundations", author: "Richard A. Knaak", date: "Feb 2001", rating: "4.05", synopsis: "Set after the Second War, focusing on the mage Rhonin and the liberation of the Dragonqueen Alexstrasza from the Dragonmaw Clan.", cover: "Images/day-of-the-dragon.jpg", buyUrl: `https://www.amazon.com/s?k=Day+of+the+Dragon+Richard+Knaak&tag=${tag}` },
-            { id: 6, title: "The Well of Eternity", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Mar 2004", rating: "4.20", synopsis: "Modern heroes are cast 10,000 years into the past during the Burning Legion's first invasion of Azeroth.", cover: "Images/the-well-of-eternity.jpg", buyUrl: `https://www.amazon.com/s?k=The+Well+of+Eternity+Richard+Knaak&tag=${tag}` },
-            { id: 7, title: "The Demon Soul", titleColor: colorFire, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Oct 2004", rating: "4.22", synopsis: "Part two of the War of the Ancients. Deathwing's betrayal is revealed as the defenders of Azeroth struggle to survive.", cover: "Images/the-demon-soul.jpg", buyUrl: `https://www.amazon.com/s?k=The+Demon+Soul+Richard+Knaak&tag=${tag}` },
-            { id: 8, title: "The Sundering", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Jul 2005", rating: "4.26", synopsis: "The conclusion to the War of the Ancients. The Well of Eternity collapses, reshaping the continents of Azeroth forever.", cover: "Images/the-sundering.jpg", buyUrl: `https://www.amazon.com/s?k=The+Sundering+Richard+Knaak&tag=${tag}` },
-            { id: 9, title: "Lord of the Clans", titleColor: colorGold, category: "Time Travel & 3rd War", author: "Christie Golden", date: "Oct 2001", rating: "4.26", synopsis: "Raised as a gladiator slave, the young orc Thrall escapes to master shamanism and unite the scattered orc clans into a new Horde.", cover: "Images/lord-of-the-clans.jpg", buyUrl: `https://www.amazon.com/s?k=Lord+of+the+Clans+Christie+Golden&tag=${tag}` },
-            { id: 10, title: "Of Blood and Honor", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Chris Metzen", date: "Jan 2001", rating: "4.03", synopsis: "The paladin Tirion Fordring risks everything when he makes a fateful connection with the honorable orc Eitrigg.", cover: "Images/of-blood-and-honor.jpg", buyUrl: `https://www.amazon.com/s?k=Of+Blood+and+Honor+Chris+Metzen&tag=${tag}` },
-            { id: 11, title: "Arthas: Rise of the Lich King", titleColor: colorIce, category: "Time Travel & 3rd War", author: "Christie Golden", date: "Apr 2009", rating: "4.35", synopsis: "Prince Arthas Menethil makes terrible sacrifices to save his people, a tragic path that leads him to the Frozen Throne.", cover: "Images/arthas-rise-of-the-lich-king.jpg", buyUrl: `https://www.amazon.com/s?k=Arthas+Rise+of+the+Lich+King+Christie+Golden&tag=${tag}` },
-            { id: 12, title: "Illidan", titleColor: colorFel, category: "Time Travel & 3rd War", author: "William King", date: "Apr 2016", rating: "4.24", synopsis: "Follows Illidan Stormrage from his release in Warcraft III through his rule over Outland.", cover: "Images/illidan.jpg", buyUrl: `https://www.amazon.com/s?k=Illidan+World+of+Warcraft+William+King&tag=${tag}` },
-            { id: 13, title: "Cycle of Hatred", titleColor: colorSilver, category: "The MMO Era", author: "Keith R.A. DeCandido", date: "Jan 2006", rating: "3.55", synopsis: "Set shortly before Vanilla WoW, exploring the fragile peace between the Horde and Alliance in Kalimdor.", cover: "Images/cycle-of-hatred.jpg", buyUrl: `https://www.amazon.com/s?k=Cycle+of+Hatred+Keith+DeCandido&tag=${tag}` },
-            { id: 14, title: "Night of the Dragon", titleColor: colorSilver, category: "The MMO Era", author: "Richard A. Knaak", date: "Nov 2008", rating: "3.95", synopsis: "A sequel to Day of the Dragon, returning to Grim Batol to face the sinister Twilight Dragonflight.", cover: "Images/night-of-the-dragon.jpg", buyUrl: `https://www.amazon.com/s?k=Night+of+the+Dragon+Richard+Knaak&tag=${tag}` },
-            { id: 15, title: "Stormrage", titleColor: "#87c773", category: "The MMO Era", author: "Richard A. Knaak", date: "Feb 2010", rating: "3.90", synopsis: "Malfurion Stormrage is trapped in the Emerald Nightmare, and his allies must fight to awaken him before the corruption spreads.", cover: "Images/stormrage.jpg", buyUrl: `https://www.amazon.com/s?k=Stormrage+Richard+Knaak&tag=${tag}` },
-            { id: 16, title: "The Shattering", titleColor: colorFire, category: "The MMO Era", author: "Christie Golden", date: "Oct 2010", rating: "4.05", synopsis: "As Thrall steps down to heal the world, Garrosh Hellscream takes command, heightening faction tensions.", cover: "Images/the-shattering.jpg", buyUrl: `https://www.amazon.com/s?k=The+Shattering+Prelude+to+Cataclysm&tag=${tag}` },
-            { id: 17, title: "Wolfheart", titleColor: colorSilver, category: "The MMO Era", author: "Richard A. Knaak", date: "Sep 2011", rating: "3.90", synopsis: "King Varian Wrynn struggles to accept the Worgen into the Alliance while Garrosh presses his assault on Ashenvale.", cover: "Images/wolfheart.jpg", buyUrl: `https://www.amazon.com/s?k=Wolfheart+Richard+Knaak&tag=${tag}` },
-            { id: 18, title: "Thrall: Twilight of the Aspects", titleColor: colorGold, category: "The MMO Era", author: "Christie Golden", date: "Jul 2011", rating: "4.08", synopsis: "Thrall journeys across time and space to aid the Dragon Aspects in their fight against the Twilight's Hammer.", cover: "Images/thrall-twilight-of-the-aspects.jpg", buyUrl: `https://www.amazon.com/s?k=Twilight+of+the+Aspects+Christie+Golden&tag=${tag}` },
-            { id: 19, title: "Jaina Proudmoore: Tides of War", titleColor: colorIce, category: "The MMO Era", author: "Christie Golden", date: "Aug 2012", rating: "4.21", synopsis: "The tragic destruction of Theramore pushes Jaina Proudmoore to the brink, altering her path forever.", cover: "Images/jaina-proudmoore-tides-of-war.jpg", buyUrl: `https://www.amazon.com/s?k=Tides+of+War+Christie+Golden&tag=${tag}` },
-            { id: 20, title: "Dawn of the Aspects", titleColor: colorGold, category: "The MMO Era", author: "Richard A. Knaak", date: "Nov 2013", rating: "4.07", synopsis: "Kalecgos experiences visions of the ancient proto-dragons and their original battle against Galakrond.", cover: "Images/dawn-of-the-aspects.jpg", buyUrl: `https://www.amazon.com/s?k=Dawn+of+the+Aspects+Richard+Knaak&tag=${tag}` },
-            { id: 21, title: "Vol'jin: Shadows of the Horde", titleColor: "#5cb8b2", category: "The MMO Era", author: "Michael A. Stackpole", date: "Jul 2013", rating: "4.22", synopsis: "Recovering from an assassination attempt in Pandaria, Vol'jin must defend a monastery against the Zandalari.", cover: "Images/voljin-shadows-of-the-horde.jpg", buyUrl: `https://www.amazon.com/s?k=Shadows+of+the+Horde+Michael+Stackpole&tag=${tag}` },
-            { id: 22, title: "War Crimes", titleColor: colorGold, category: "The MMO Era", author: "Christie Golden", date: "May 2014", rating: "4.15", synopsis: "Garrosh Hellscream stands trial in Pandaria, forcing leaders from both factions to confront their own pasts.", cover: "Images/war-crimes.jpg", buyUrl: `https://www.amazon.com/s?k=War+Crimes+Christie+Golden&tag=${tag}` },
-            { id: 23, title: "Before the Storm", titleColor: colorGold, category: "The MMO Era", author: "Christie Golden", date: "Jun 2018", rating: "3.95", synopsis: "Anduin Wrynn and Sylvanas Windrunner attempt to navigate a tenuous peace after the defeat of the Burning Legion.", cover: "Images/before-the-storm.jpg", buyUrl: `https://www.amazon.com/s?k=Before+the+Storm+Christie+Golden&tag=${tag}` },
-            { id: 24, title: "Shadows Rising", titleColor: "#b08dce", category: "The MMO Era", author: "Madeleine Roux", date: "Jul 2020", rating: "3.85", synopsis: "The Horde and Alliance hunt for Sylvanas and Nathanos in the aftermath of the Fourth War.", cover: "Images/shadows-rising.jpg", buyUrl: `https://www.amazon.com/s?k=Shadows+Rising+Madeleine+Roux&tag=${tag}` },
-            { id: 25, title: "Sylvanas", titleColor: "#8e9cb3", category: "The MMO Era", author: "Christie Golden", date: "Mar 2022", rating: "4.32", synopsis: "An intimate look into the long afterlife of the Banshee Queen and her motivations leading into the Shadowlands.", cover: "Images/sylvanas.jpg", buyUrl: `https://www.amazon.com/s?k=Sylvanas+World+of+Warcraft+Christie+Golden&tag=${tag}` },
-            { id: 26, title: "War of the Scaleborn", titleColor: colorGold, category: "The MMO Era", author: "Courtney Alameda", date: "Oct 2023", rating: "4.10", synopsis: "An ancient history of the conflict between the empowered Dragon Aspects and the elemental Primalists.", cover: "Images/war-of-the-scaleborn.jpg", buyUrl: `https://www.amazon.com/s?k=War+of+the+Scaleborn+Courtney+Alameda&tag=${tag}` },
-            { id: 27, title: "Blood Ties", titleColor: "#9b59b6", category: "The MMO Era", author: "TBD", date: "TBA", rating: "TBD", synopsis: "Sets the stage for the Midnight expansion as the void forces prepare to strike at the heart of Azeroth.", cover: "Images/blood-ties.jpg", buyUrl: `https://www.amazon.com/s?k=World+of+Warcraft+Blood+Ties&tag=${tag}` }
+            { id: 1, title: "Rise of the Horde", titleColor: colorSilver, category: "The Foundations", author: "Christie Golden", date: "Dec 2006", rating: "4.21", 
+              synopsis: "Before the Dark Portal opened, the Orcs were a noble, shamanic society living in harmony on Draenor. This novel details their tragic, systematic fall into bloodlust, manipulated by the Burning Legion's deception of the orc elder Ner'zhul and the relentless ambition of Gul'dan.", 
+              preview: "The drumming was constant, a heartbeat of the world that echoed through the Nagrand plains. Durotan, chieftain of the Frostwolves, watched the flames of the Great Anvil leap into the night sky. There was a new tension in the air, a whisper of dark spirits that the shaman could not silence. Gul'dan stood at the edge of the firelight, his eyes gleaming with a twisted, unnatural fel-green promise that made Durotan's blood run cold.",
+              cover: "Images/rise-of-the-horde.jpg", buyUrl: `https://www.amazon.com/s?k=Rise+of+the+Horde+Christie+Golden&tag=${tag}` },
+              
+            { id: 2, title: "The Last Guardian", titleColor: colorSilver, category: "The Foundations", author: "Jeff Grubb", date: "Dec 2001", rating: "4.12", 
+              synopsis: "The wizard Medivh struggles against a dark, ancient presence residing within his own soul. His young apprentice, Khadgar, is sent by the Kirin Tor to uncover his master's secrets just as the Orcish Horde begins pouring into Azeroth through the Dark Portal.", 
+              preview: "Karazhan loomed like a jagged spear piercing the storm clouds above Deadwind Pass. Khadgar tightened his cloak against the biting wind, his satchel of missives feeling heavier with each step up the winding stone path. He had been warned that the Magus Medivh was eccentric, perhaps even mad. But as the heavy oak doors groaned open without a touch, revealing a profound, unnatural darkness within, Khadgar realized the Kirin Tor had not told him the entire truth.",
+              cover: "Images/the-last-guardian.jpg", buyUrl: `https://www.amazon.com/s?k=The+Last+Guardian+Jeff+Grubb&tag=${tag}` },
+              
+            { id: 3, title: "Tides of Darkness", titleColor: colorGold, category: "The Foundations", author: "Aaron Rosenberg", date: "Aug 2007", rating: "4.15", 
+              synopsis: "Following the devastating fall of Stormwind, Lord Anduin Lothar leads the human survivors north across the Great Sea to Lordaeron. There, he must convince the human kingdoms, dwarves, and high elves to forge a grand Alliance to halt the Orcish Horde's brutal march across the continent.", 
+              preview: "The sails of the refugee fleet snapped violently in the northern gale. Lord Anduin Lothar gripped the railing of the flagship, watching the smoke of his homeland fade into the horizon. Stormwind was gone. King Llane was dead. Below decks, the remnants of his people wept in the darkness. Lothar turned his gaze toward the shores of Lordaeron, knowing that the survival of humanity now depended on kings who had never seen the monstrous green tide of the Horde.",
+              cover: "Images/tides-of-darkness.jpg", buyUrl: `https://www.amazon.com/s?k=Tides+of+Darkness+Aaron+Rosenberg&tag=${tag}` },
+              
+            { id: 4, title: "Beyond the Dark Portal", titleColor: colorGold, category: "The Foundations", author: "Aaron Rosenberg & Christie Golden", date: "Apr 2008", rating: "4.13", 
+              synopsis: "The Alliance has shattered the Horde, but the threat is not over. The elder shaman Ner'zhul has taken command of the remaining orc clans on Draenor and opened a rift to Azeroth once again. The Alliance expedition must push through the Dark Portal into the dying alien world to end the threat forever.", 
+              preview: "The portal flared with a sickening, chaotic light, casting long shadows across the Blasted Lands. General Turalyon raised his shattered sword, the holy light responding to his call despite the suffocating dread radiating from the rift. 'We do not know what awaits us on the other side,' Turalyon shouted, his voice echoing over the assembled Sons of Lothar. 'But we step into the abyss so that Azeroth may never have to fear it again.'",
+              cover: "Images/beyond-the-dark-portal.jpg", buyUrl: `https://www.amazon.com/s?k=Beyond+the+Dark+Portal+Aaron+Rosenberg&tag=${tag}` },
+              
+            { id: 5, title: "Day of the Dragon", titleColor: colorGold, category: "The Foundations", author: "Richard A. Knaak", date: "Feb 2001", rating: "4.05", 
+              synopsis: "Set in the aftermath of the Second War, the renegade mage Rhonin is dispatched on a perilous mission to the orc-controlled fortress of Grim Batol. He must uncover a dark conspiracy and orchestrate the liberation of the Dragonqueen Alexstrasza, who is being held captive by the Dragonmaw Clan.", 
+              preview: "Grim Batol was a fortress of nightmares, its ancient dwarven halls corrupted by the stench of sulfur and the cruel laughter of the Dragonmaw clan. Rhonin crouched behind an outcropping of jagged obsidian, his hands weaving an invisible ward of silence. In the cavern below, the great red leviathan, Alexstrasza the Life-Binder, thrashed against her enchanted chains. The Demon Soul glowed in the hands of the orc warlock Nekros, an artifact of such immense power that even the air around it seemed to bleed.",
+              cover: "Images/day-of-the-dragon.jpg", buyUrl: `https://www.amazon.com/s?k=Day+of+the+Dragon+Richard+Knaak&tag=${tag}` },
+              
+            { id: 6, title: "The Well of Eternity", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Mar 2004", rating: "4.20", 
+              synopsis: "A temporal anomaly casts modern heroes—the dragon mage Krasus, the human wizard Rhonin, and the orc veteran Broxigar—ten thousand years into Azeroth's past. They arrive during the zenith of the night elven empire, just as Queen Azshara and her Highborne inadvertently invite the Burning Legion into the world.", 
+              preview: "The Well of Eternity was a churning maelstrom of raw, unfiltered arcane magic. Its crystalline waters pulsed with a chaotic brilliance that mesmerized anyone who stared into its depths for too long. Deep within the palace, Queen Azshara traced the rim of her golden goblet, listening to the whispered promises of a god-like entity reaching out from the Great Dark Beyond. Sargeras had found them, and the Queen believed he was coming to offer them perfection.",
+              cover: "Images/the-well-of-eternity.jpg", buyUrl: `https://www.amazon.com/s?k=The+Well+of+Eternity+Richard+Knaak&tag=${tag}` },
+              
+            { id: 7, title: "The Demon Soul", titleColor: colorFire, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Oct 2004", rating: "4.22", 
+              synopsis: "As the Burning Legion lays waste to ancient Kalimdor, the Dragon Aspects construct a powerful artifact to turn the tide. However, the black dragon Neltharion succumbs to the Old Gods' whispers, betraying his brethren. The defenders of Azeroth are caught between an endless demonic army and a newly forged madness.", 
+              preview: "Neltharion spread his massive, obsidian wings, casting a shadow over the assembled Dragonflights. The golden disc hovering before him—the Dragon Soul—hummed with the combined essence of the other Aspects. It was meant to be their ultimate weapon against the Legion. But as Neltharion channeled his power into the artifact, the whispers of the earth grew to a deafening roar in his mind. The disc shattered the harmony of the flights, and in that moment, the Earth-Warder ceased to be. Deathwing was born.",
+              cover: "Images/the-demon-soul.jpg", buyUrl: `https://www.amazon.com/s?k=The+Demon+Soul+Richard+Knaak&tag=${tag}` },
+              
+            { id: 8, title: "The Sundering", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Jul 2005", rating: "4.26", 
+              synopsis: "The apocalyptic conclusion to the War of the Ancients. Malfurion Stormrage, Tyrande Whisperwind, and their unlikely allies mount a final, desperate assault on the Well of Eternity. The ensuing catastrophe will shatter the singular continent of Kalimdor and shape the world of Azeroth forever.", 
+              preview: "The earth groaned as the portal above the Well of Eternity began to collapse. The magical vortex tore at the foundations of the world, pulling stones, trees, and demons into its chaotic maw. Malfurion held onto the roots of the world tree, his druidic magic struggling to stitch the torn leylines back together. But the pressure was too immense. With a deafening crack that ruptured the sky, the Well imploded, and the sea rushed in to claim the heart of the empire.",
+              cover: "Images/the-sundering.jpg", buyUrl: `https://www.amazon.com/s?k=The+Sundering+Richard+Knaak&tag=${tag}` },
+              
+            { id: 9, title: "Lord of the Clans", titleColor: colorGold, category: "Time Travel & 3rd War", author: "Christie Golden", date: "Oct 2001", rating: "4.26", 
+              synopsis: "Raised as a gladiator slave by a cruel human master, the young orc Thrall knows nothing of his people's proud history. Breaking free of his chains, he journeys across Lordaeron to master the ancient ways of shamanism, reclaim his heritage, and unite the scattered, lethargic orc clans into a new Horde.", 
+              preview: "Thrall stood in the center of the muddy arena, the roar of the human spectators washing over him. Aedelas Blackmoore watched from the balcony, a cruel smile playing on his lips. Thrall was a beast to them, a weapon forged for their entertainment. But as he looked down at the blood on his hands, a latent memory stirred within him—a connection to the earth, the wind, and the fire. He was not a slave. He was the son of Durotan.",
+              cover: "Images/lord-of-the-clans.jpg", buyUrl: `https://www.amazon.com/s?k=Lord+of+the+Clans+Christie+Golden&tag=${tag}` },
+              
+            { id: 10, title: "Of Blood and Honor", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Chris Metzen", date: "Jan 2001", rating: "4.03", 
+              synopsis: "The revered paladin Tirion Fordring believes all orcs are irredeemable monsters until he is saved by an old, honorable orc warrior named Eitrigg. When his own people capture Eitrigg, Tirion must choose between his strict allegiance to the Alliance and the universal demands of honor and justice.", 
+              preview: "Tirion Fordring stared at the ruined tower, his silver warhammer resting heavy in his grip. The orc before him was old, his skin graying and scarred from countless battles. By all accounts, Tirion should have struck him down in the name of the Light. But the creature had lowered its weapon and offered a hand of mercy. In that fleeting exchange of gazes, Tirion saw a profound wisdom and a shattered pride that challenged everything he had ever been taught about the Horde.",
+              cover: "Images/of-blood-and-honor.jpg", buyUrl: `https://www.amazon.com/s?k=Of+Blood+and+Honor+Chris+Metzen&tag=${tag}` },
+              
+            { id: 11, title: "Arthas: Rise of the Lich King", titleColor: colorIce, category: "Time Travel & 3rd War", author: "Christie Golden", date: "Apr 2009", rating: "4.35", 
+              synopsis: "The definitive tragedy of Prince Arthas Menethil. Driven by a desperate need to save his people from the undead plague, the golden prince of Lordaeron makes a series of terrible sacrifices. His righteous crusade leads him to the frozen wastes of Northrend, where the cursed runeblade Frostmourne awaits.", 
+              preview: "The wind howled across the icy expanse of Icecrown, carrying whispers of power and doom. Arthas stood before the frozen dais, the cursed runeblade Frostmourne hovering within the glacial block. He ignored the warnings of Muradin, ignored the chilling sensation creeping up his arm. 'I will gladly bear any curse to save my homeland,' Arthas declared. As he grasped the hilt, the ice shattered, and the Light forever abandoned the prince of Lordaeron.",
+              cover: "Images/arthas-rise-of-the-lich-king.jpg", buyUrl: `https://www.amazon.com/s?k=Arthas+Rise+of+the+Lich+King+Christie+Golden&tag=${tag}` },
+              
+            { id: 12, title: "Illidan", titleColor: colorFel, category: "Time Travel & 3rd War", author: "William King", date: "Apr 2016", rating: "4.24", 
+              synopsis: "You are not prepared. This novel follows the Betrayer, Illidan Stormrage, from his release during the Third War through his volatile rule over Outland. It details his secret, extreme preparations to strike back against the Burning Legion, even as heroes from Azeroth mobilize to hunt him down.", 
+              preview: "Ten thousand years of darkness had not dulled Illidan’s fury. He sat upon the throne of the Black Temple, the fel energy radiating from his tattoos illuminating the cavernous hall. Below him, the broken remnants of Outland's defenders prepared for an impossible war. His brother Malfurion thought him a monster. Maiev Shadowsong considered him the ultimate prize. But they did not understand the vastness of the Burning Legion. Illidan alone saw the true threat, and he would burn worlds to destroy it.",
+              cover: "Images/illidan.jpg", buyUrl: `https://www.amazon.com/s?k=Illidan+World+of+Warcraft+William+King&tag=${tag}` },
+              
+            { id: 13, title: "Cycle of Hatred", titleColor: colorSilver, category: "The MMO Era", author: "Keith R.A. DeCandido", date: "Jan 2006", rating: "3.55", 
+              synopsis: "Set directly before the events of Vanilla World of Warcraft. Thrall and Jaina Proudmoore struggle to maintain the fragile peace between the Horde and the Alliance in Kalimdor. A sinister, hidden demonic cult attempts to exploit ancient prejudices and push the factions back into open war.", 
+              preview: "The heat of the Barrens was unforgiving, baking the red earth until it cracked. Warchief Thrall wiped the sweat from his brow, reading the scout's report. Skirmishes along the border of Ashenvale were escalating. Jaina had promised him that human logging operations would respect the boundaries, but blood had already been spilled. Somewhere in the shadows, an unseen hand was pulling the strings, eager to see the tenuous alliance formed at Mount Hyjal burn to ash.",
+              cover: "Images/cycle-of-hatred.jpg", buyUrl: `https://www.amazon.com/s?k=Cycle+of+Hatred+Keith+DeCandido&tag=${tag}` },
+              
+            { id: 14, title: "Night of the Dragon", titleColor: colorSilver, category: "The MMO Era", author: "Richard A. Knaak", date: "Nov 2008", rating: "3.95", 
+              synopsis: "A direct sequel to Day of the Dragon. The renegade mage Rhonin returns to the cursed fortress of Grim Batol, where a new and terrifying power has taken root. Deep within the mountain, Deathwing's consort Sintharia is breeding a nightmare: the Twilight Dragonflight.", 
+              preview: "Grim Batol had been quiet for years, but the silence was deceptive. Deep within its labyrinthine depths, a purple, twilight luminescence pulsed from giant, corrupted eggs. Sintharia, scarred and maddened by her long-dead mate Deathwing, watched her creations hatch. They were not merely dragons; they were vampires of magic, designed to consume the essences of the other flights. When Rhonin and his allies breached the lower chambers, they realized the true horror was only just beginning.",
+              cover: "Images/night-of-the-dragon.jpg", buyUrl: `https://www.amazon.com/s?k=Night+of+the+Dragon+Richard+Knaak&tag=${tag}` },
+              
+            { id: 15, title: "Stormrage", titleColor: "#87c773", category: "The MMO Era", author: "Richard A. Knaak", date: "Feb 2010", rating: "3.90", 
+              synopsis: "Malfurion Stormrage, the greatest of the druids, lies trapped within the Emerald Nightmare, his physical body comatose. As the corruption begins to leak into Azeroth, driving citizens mad in their sleep, Tyrande Whisperwind and Broll Bearmantle must risk everything to enter the Dream and save him.", 
+              preview: "The Emerald Dream, once a flawless reflection of Azeroth's primal beauty, was rotting. Malfurion ran through a forest of warped, weeping willows, a thick, cloying mist clinging to his fur. Shadowy tendrils lashed out from the undergrowth, manifestations of pure terror. The Nightmare Lord had trapped him in a maze of his own doubts. If he fell asleep in the waking world, he would be lost forever in this realm of madness.",
+              cover: "Images/stormrage.jpg", buyUrl: `https://www.amazon.com/s?k=Stormrage+Richard+Knaak&tag=${tag}` },
+              
+            { id: 16, title: "The Shattering", titleColor: colorFire, category: "The MMO Era", author: "Christie Golden", date: "Oct 2010", rating: "4.05", 
+              synopsis: "The elements of Azeroth are in chaos. Thrall steps down as Warchief to heal the broken world, leaving the aggressive Garrosh Hellscream in charge of the Horde. Political assassinations and broken treaties push the Alliance and Horde to the brink, setting the stage for the Cataclysm.", 
+              preview: "The ground beneath Orgrimmar trembled, a deep, unsettling vibration that sent dust falling from the rafters of Grommash Hold. Thrall looked at the Doomhammer, its weight feeling entirely wrong in his hands. The elements were crying out in agony, ignoring his shamanic calls. 'I must go to Nagrand,' he told Cairne Bloodhoof. 'I must learn what is tearing the world apart. I leave the Horde in the hands of Garrosh Hellscream.' It was a decision that would fracture his people.",
+              cover: "Images/the-shattering.jpg", buyUrl: `https://www.amazon.com/s?k=The+Shattering+Prelude+to+Cataclysm&tag=${tag}` },
+              
+            { id: 17, title: "Wolfheart", titleColor: colorSilver, category: "The MMO Era", author: "Richard A. Knaak", date: "Sep 2011", rating: "3.90", 
+              synopsis: "Following the Cataclysm, King Varian Wrynn struggles to unite the Alliance. He must overcome his own internal rage to accept the cursed Worgen of Gilneas into their ranks. Meanwhile, Garrosh Hellscream mounts a massive Horde assault on the forests of Ashenvale.", 
+              preview: "Varian Wrynn stood in the rain outside the gates of Darnassus. The Gilneans, bearing the savage curse of the Worgen, awaited his judgment. Lo'Gosh, the wolf-spirit within Varian, howled for blood, demanding he reject these unstable beasts. Yet, as he watched Genn Greymane control his transformation, channeling his fury into a focused, lethal discipline, Varian realized that mastering the beast within was exactly what the Alliance needed to survive Garrosh's onslaught.",
+              cover: "Images/wolfheart.jpg", buyUrl: `https://www.amazon.com/s?k=Wolfheart+Richard+Knaak&tag=${tag}` },
+              
+            { id: 18, title: "Thrall: Twilight of the Aspects", titleColor: colorGold, category: "The MMO Era", author: "Christie Golden", date: "Jul 2011", rating: "4.08", 
+              synopsis: "Thrall, now known simply as Go'el, must embrace his destiny as the World Shaman. He embarks on a dangerous journey across time and alternate realities to aid the divided Dragon Aspects, helping them find a new purpose in their fight against Deathwing and the Twilight's Hammer.", 
+              preview: "The Caverns of Time shifted wildly, throwing Thrall into a vision of a world that never was. He stood before the ruins of a frozen Orgrimmar, the Blackrock Spire looming in the distance. Here, Aedelas Blackmoore had conquered Lordaeron and murdered his parents. As Thrall navigated this twisted timeline, he realized that to heal the Dragon Aspects, he first had to make peace with the lingering shadows of his own turbulent past.",
+              cover: "Images/thrall-twilight-of-the-aspects.jpg", buyUrl: `https://www.amazon.com/s?k=Twilight+of+the+Aspects+Christie+Golden&tag=${tag}` },
+              
+            { id: 19, title: "Jaina Proudmoore: Tides of War", titleColor: colorIce, category: "The MMO Era", author: "Christie Golden", date: "Aug 2012", rating: "4.21", 
+              synopsis: "Jaina Proudmoore has dedicated her life to maintaining peace. But when Garrosh Hellscream annihilates her beloved city of Theramore with a devastating mana bomb, Jaina is pushed past her breaking point. The tragedy transforms the diplomatic mage into a weapon of cold, calculating vengeance.", 
+              preview: "The mana bomb hung in the sky above Theramore, a pulsing, arcane sun that defied nature. Jaina watched in paralyzed horror as the zeppelin dropped its payload. The explosion made no sound; it simply erased reality. The violet light expanded, turning stone, steel, and flesh into arcane dust. When Jaina awoke in the crater, her golden hair turned stark white by the arcane fallout, the diplomat was dead. Only the architect of the Horde's destruction remained.",
+              cover: "Images/jaina-proudmoore-tides-of-war.jpg", buyUrl: `https://www.amazon.com/s?k=Tides+of+War+Christie+Golden&tag=${tag}` },
+              
+            { id: 20, title: "Dawn of the Aspects", titleColor: colorGold, category: "The MMO Era", author: "Richard A. Knaak", date: "Nov 2013", rating: "4.07", 
+              synopsis: "With their titan-given powers expended after the fall of Deathwing, the Dragon Aspects are lost. Kalecgos experiences powerful visions of the ancient past, witnessing the proto-dragons' original, brutal battle against the monstrous Father of Dragons, Galakrond, long before they became Aspects.", 
+              preview: "The skies of prehistoric Azeroth were dominated by a monstrosity of impossible proportions. Galakrond, the massive proto-dragon, swallowed his kin whole, his body mutating with necrotic energies. Through the artifact in his claws, Kalecgos lived the terror of Malygos and Alexstrasza as they darted through the canyon, mere pests compared to the behemoth hunting them. They had no titan magic then, only primal cunning and a desperate will to survive.",
+              cover: "Images/dawn-of-the-aspects.jpg", buyUrl: `https://www.amazon.com/s?k=Dawn+of+the+Aspects+Richard+Knaak&tag=${tag}` },
+              
+            { id: 21, title: "Vol'jin: Shadows of the Horde", titleColor: "#5cb8b2", category: "The MMO Era", author: "Michael A. Stackpole", date: "Jul 2013", rating: "4.22", 
+              synopsis: "Recovering from an assassination attempt ordered by Garrosh, the Darkspear leader Vol'jin seeks refuge in a Pandaren monastery. There, alongside a human hunter, he must defend the region from a Zandalari invasion while discovering his true vision for the future of the Horde.", 
+              preview: "The venom burned in Vol'jin's veins, a cold fire that defied the healing magic of the Shado-Pan monks. He lay in the quiet mountain monastery, his mind feverish with visions of the Loa. Garrosh had tried to silence him, to purge the Horde of its honor. But as the drums of the Zandalari echoed through the Kun-Lai Summit, Vol'jin realized his survival was not just about revenge. It was about proving what the Horde truly meant.",
+              cover: "Images/voljin-shadows-of-the-horde.jpg", buyUrl: `https://www.amazon.com/s?k=Shadows+of+the+Horde+Michael+Stackpole&tag=${tag}` },
+              
+            { id: 22, title: "War Crimes", titleColor: colorGold, category: "The MMO Era", author: "Christie Golden", date: "May 2014", rating: "4.15", 
+              synopsis: "Garrosh Hellscream has been dethroned and stands trial in Pandaria for his atrocities. Leaders from both factions gather to witness the prosecution. Through magical visions, the trial exposes the dark pasts and hypocrisies of everyone involved, pushing tempers to the breaking point.", 
+              preview: "The August Celestials presided over the Temple of the White Tiger, their gaze impassive. In the center of the arena, chained in enchanted irons, Garrosh Hellscream sneered at the assembly. He showed no remorse, no fear. As the Bronze Dragonflight projected the first vision of his war crimes into the air for all to see, the true trial began—not just for the fallen Warchief, but for the moral convictions of every leader in the room who had ever ordered blood spilled.",
+              cover: "Images/war-crimes.jpg", buyUrl: `https://www.amazon.com/s?k=War+Crimes+Christie+Golden&tag=${tag}` },
+              
+            { id: 23, title: "Before the Storm", titleColor: colorGold, category: "The MMO Era", author: "Christie Golden", date: "Jun 2018", rating: "3.95", 
+              synopsis: "In the aftermath of the Burning Legion's defeat, the miraculous substance Azerite bleeds from the wounded world. King Anduin Wrynn and Warchief Sylvanas Windrunner attempt to navigate a tenuous peace, culminating in a historic, tragic gathering in the Arathi Highlands.", 
+              preview: "The golden plains of Arathi were meant to be a bridge. Anduin Wrynn stood at the edge of the Alliance lines, watching as the Forsaken citizens tentatively crossed the field to reunite with their living human relatives. It was a fragile, beautiful moment of peace. But across the valley, Sylvanas Windrunner watched the reunions with cold, unblinking red eyes. She saw not love, but a vulnerability that threatened everything she had built in the shadows.",
+              cover: "Images/before-the-storm.jpg", buyUrl: `https://www.amazon.com/s?k=Before+the+Storm+Christie+Golden&tag=${tag}` },
+              
+            { id: 24, title: "Shadows Rising", titleColor: "#b08dce", category: "The MMO Era", author: "Madeleine Roux", date: "Jul 2020", rating: "3.85", 
+              synopsis: "The Fourth War is over, but Sylvanas has fled. The Horde council and the Alliance deploy their best agents to hunt down the Banshee Queen and her loyalist, Nathanos Blightcaller. Tensions rise as the search leads them into the deadly swamps of Zandalar.", 
+              preview: "The Zandalari swamps were suffocating, the air thick with humidity and the scent of decay. Thrall wiped the mud from his axe, glancing at Jaina Proudmoore, who stood rigid, her arcane magic humming in the damp air. They were hunting a ghost. Sylvanas had abandoned the Horde, shattered the helm of domination, and vanished. They needed Nathanos to find her, but the Blightcaller was leaving a trail of traps and corpses that tested the limits of their fragile armistice.",
+              cover: "Images/shadows-rising.jpg", buyUrl: `https://www.amazon.com/s?k=Shadows+Rising+Madeleine+Roux&tag=${tag}` },
+              
+            { id: 25, title: "Sylvanas", titleColor: "#8e9cb3", category: "The MMO Era", author: "Christie Golden", date: "Mar 2022", rating: "4.32", 
+              synopsis: "An intimate, sweeping look into the long afterlife of Sylvanas Windrunner. The novel chronicles her journey from the Ranger-General of Silvermoon to the Banshee Queen, explaining the complex motivations that led to her controversial pact with the Jailer in the Shadowlands.", 
+              preview: "For years, she had worn the mantle of the Banshee Queen like a suit of jagged armor. Sylvanas stood on the precipice of Icecrown, holding the shattered pieces of the Helm of Domination. She thought of her death at Arthas's hands, the agonizing tear of her soul, the bleak darkness that awaited them all. The Jailer had promised her the power to unmake this flawed system of life and death. As she stepped into the rift, she told herself she was freeing them all. But the doubt lingered.",
+              cover: "Images/sylvanas.jpg", buyUrl: `https://www.amazon.com/s?k=Sylvanas+World+of+Warcraft+Christie+Golden&tag=${tag}` },
+              
+            { id: 26, title: "War of the Scaleborn", titleColor: colorGold, category: "The MMO Era", author: "Courtney Alameda", date: "Oct 2023", rating: "4.10", 
+              synopsis: "An ancient history of the primal conflict that shaped the Dragon Isles. It details the ideological and physical war between the titan-empowered Dragon Aspects, led by Alexstrasza, and the elemental Primalists, led by Vyranoth and Iridikron, who refused the titans' gifts.", 
+              preview: "The storms above the Dragon Isles raged with unnatural fury, a manifestation of the Primalists' wrath. Alexstrasza the Life-Binder pleaded with Vyranoth, her former friend, across the chasm of fire and ice. 'The Titans gave us this power to protect the world!' Alexstrasza cried out. Vyranoth sneered, the frost gathering on her scales. 'They put a collar on you, sister. We will wash away their corruption with the fury of the elements themselves.'",
+              cover: "Images/war-of-the-scaleborn.jpg", buyUrl: `https://www.amazon.com/s?k=War+of+the+Scaleborn+Courtney+Alameda&tag=${tag}` },
+              
+            { id: 27, title: "Blood Ties", titleColor: "#9b59b6", category: "The MMO Era", author: "TBD", date: "TBA", rating: "TBD", 
+              synopsis: "Sets the stage for the Midnight expansion. As the shadows lengthen across Azeroth, the scattered forces of the Void prepare to strike at the heart of the world. Alliances will be tested as ancient bloodlines and dark secrets are dragged out into the light.", 
+              preview: "The whispers started in the deep places of the world. They were not words, but feelings—a creeping dread that the light of the sun was a temporary illusion. In the ruins of an ancient temple, a lone watcher felt the cold stone pulse with a heartbeat that did not belong to Azeroth. The Void was not merely invading; it was waking up. And as the shadows stretched toward the World Tree, the watcher knew that this time, neither swords nor spells would be enough to hold back the midnight.",
+              cover: "Images/blood-ties.jpg", buyUrl: `https://www.amazon.com/s?k=World+of+Warcraft+Blood+Ties&tag=${tag}` }
         ];
 
         let readStatus = JSON.parse(localStorage.getItem('wowBooksRead')) || {};
@@ -571,7 +725,14 @@
                             <div class="book-rating">
                                 <span class="star">★</span> ${book.rating} / 5.00
                             </div>
+                            
                             <div class="book-synopsis">${book.synopsis}</div>
+                            
+                            <details class="book-preview-section" onclick="event.stopPropagation()">
+                                <summary>Read Preview Excerpt</summary>
+                                <div class="preview-text">${book.preview}</div>
+                            </details>
+
                             <div class="book-actions">
                                 <button class="action-btn btn-read" onclick="event.stopPropagation(); toggleRead(${book.id})">
                                     ${isRead ? '✓ Read' : 'Mark as Read'}
@@ -588,7 +749,12 @@
         }
 
         window.handleCardClick = function(event, id) {
-            if (event.target.tagName === 'BUTTON' || event.target.tagName === 'A' || event.target.closest('button') || event.target.closest('a') || event.target.classList.contains('drag-handle')) {
+            if (event.target.tagName === 'BUTTON' || 
+                event.target.tagName === 'A' || 
+                event.target.closest('button') || 
+                event.target.closest('a') || 
+                event.target.classList.contains('drag-handle') ||
+                event.target.closest('details')) {
                 return;
             }
             toggleMin(id);
@@ -632,7 +798,6 @@
             renderBooks();
         };
 
-        // Complete FLIP-based Touch Drag and Drop
         let draggedItem = null;
         let ghostItem = null;
         let startY = 0;
@@ -733,7 +898,6 @@
         searchInput.addEventListener('input', renderBooks);
         renderBooks();
 
-        // Register Service Worker for PWA
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js');
