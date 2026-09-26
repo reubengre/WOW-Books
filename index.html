@@ -101,38 +101,20 @@
             opacity: 0.85;
         }
 
-        /* Modern Typography Cover Element */
         .book-cover {
-            width: 105px;
+            width: 100px;
             flex-shrink: 0;
-            background: linear-gradient(135deg, #15171e 0%, #222530 100%);
-            border-right: 2px solid var(--gold-accent);
+            background-color: #15171e;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 10px;
-            text-align: center;
+            border-right: 1px solid #2a2d36;
         }
 
-        .cover-badge {
-            font-size: 0.65rem;
-            text-transform: uppercase;
-            color: var(--gold-accent);
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-            font-weight: bold;
-        }
-
-        .cover-title {
-            font-size: 0.8rem;
-            font-weight: bold;
-            color: #f3ebd8;
-            line-height: 1.2;
-            overflow: hidden;
-            display: -webkit-box;
-            -webkit-line-clamp: 5;
-            -webkit-box-orient: vertical;
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .book-info {
@@ -202,11 +184,6 @@
         }
         .book-card.minimized .book-cover {
             width: 50px;
-            padding: 4px;
-        }
-        .book-card.minimized .cover-title {
-            font-size: 0.55rem;
-            -webkit-line-clamp: 4;
         }
 
         button {
@@ -242,33 +219,38 @@
 
     <script>
         const books = [
-            { id: 1, title: "Rise of the Horde", category: "The Foundations", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. Details their tragic fall into bloodlust orchestrated by the Burning Legion." },
-            { id: 2, title: "The Last Guardian", category: "The Foundations", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence. His apprentice, Khadgar, must uncover his secrets as the Horde pours into Azeroth." },
-            { id: 3, title: "Tides of Darkness", category: "The Foundations", rating: "4.15", synopsis: "Following the fall of Stormwind, survivors flee to Lordaeron to forge a grand Alliance and halt the Orcish Horde's march." },
-            { id: 4, title: "Beyond the Dark Portal", category: "The Foundations", rating: "4.13", synopsis: "The Alliance expedition pushes through the portal into Draenor to stop the orcish threat at its source." },
-            { id: 5, title: "Day of the Dragon", category: "The Foundations", rating: "4.05", synopsis: "Set after the Second War, focusing on the mage Rhonin and the liberation of the Dragonqueen Alexstrasza from the Dragonmaw Clan." },
-            { id: 6, title: "The Well of Eternity", category: "Time Travel & 3rd War", rating: "4.20", synopsis: "Modern heroes are cast 10,000 years into the past during the Burning Legion's first invasion of Azeroth." },
-            { id: 7, title: "The Demon Soul", category: "Time Travel & 3rd War", rating: "4.22", synopsis: "Part two of the War of the Ancients. Deathwing's betrayal is revealed as the defenders of Azeroth struggle to survive." },
-            { id: 8, title: "The Sundering", category: "Time Travel & 3rd War", rating: "4.26", synopsis: "The conclusion to the War of the Ancients. The Well of Eternity collapses, reshaping the continents of Azeroth forever." },
-            { id: 9, title: "Lord of the Clans", category: "Time Travel & 3rd War", rating: "4.26", synopsis: "Raised as a gladiator slave, the young orc Thrall escapes to master shamanism and unite the scattered orc clans into a new Horde." },
-            { id: 10, title: "Of Blood and Honor", category: "Time Travel & 3rd War", rating: "4.03", synopsis: "The paladin Tirion Fordring risks everything when he makes a fateful connection with the honorable orc Eitrigg." },
-            { id: 11, title: "Arthas: Rise of the Lich King", category: "Time Travel & 3rd War", rating: "4.35", synopsis: "Prince Arthas Menethil makes terrible sacrifices to save his people, a tragic path that leads him to the Frozen Throne." },
-            { id: 12, title: "Illidan", category: "Time Travel & 3rd War", rating: "4.24", synopsis: "Follows Illidan Stormrage from his release in Warcraft III through his rule over Outland." },
-            { id: 13, title: "Cycle of Hatred", category: "The MMO Era", rating: "3.55", synopsis: "Set shortly before Vanilla WoW, exploring the fragile peace between the Horde and Alliance in Kalimdor." },
-            { id: 14, title: "Night of the Dragon", category: "The MMO Era", rating: "3.95", synopsis: "A sequel to Day of the Dragon, returning to Grim Batol to face the sinister Twilight Dragonflight." },
-            { id: 15, title: "Stormrage", category: "The MMO Era", rating: "3.90", synopsis: "Malfurion Stormrage is trapped in the Emerald Nightmare, and his allies must fight to awaken him before the corruption spreads." },
-            { id: 16, title: "The Shattering", category: "The MMO Era", rating: "4.05", synopsis: "As Thrall steps down to heal the world, Garrosh Hellscream takes command, heightening faction tensions." },
-            { id: 17, title: "Wolfheart", category: "The MMO Era", rating: "3.90", synopsis: "King Varian Wrynn struggles to accept the Worgen into the Alliance while Garrosh presses his assault on Ashenvale." },
-            { id: 18, title: "Thrall: Twilight of the Aspects", category: "The MMO Era", rating: "4.08", synopsis: "Thrall journeys across time and space to aid the Dragon Aspects in their fight against the Twilight's Hammer." },
-            { id: 19, title: "Jaina Proudmoore: Tides of War", category: "The MMO Era", rating: "4.21", synopsis: "The tragic destruction of Theramore pushes Jaina Proudmoore to the brink, altering her path forever." },
-            { id: 20, title: "Dawn of the Aspects", category: "The MMO Era", rating: "4.07", synopsis: "Kalecgos experiences visions of the ancient proto-dragons and their original battle against Galakrond." },
-            { id: 21, title: "Vol'jin: Shadows of the Horde", category: "The MMO Era", rating: "4.22", synopsis: "Recovering from an assassination attempt in Pandaria, Vol'jin must defend a monastery against the Zandalari." },
-            { id: 22, title: "War Crimes", category: "The MMO Era", rating: "4.15", synopsis: "Garrosh Hellscream stands trial in Pandaria, forcing leaders from both factions to confront their own pasts." },
-            { id: 23, title: "Before the Storm", category: "The MMO Era", rating: "3.95", synopsis: "Anduin Wrynn and Sylvanas Windrunner attempt to navigate a tenuous peace after the defeat of the Burning Legion." },
-            { id: 24, title: "Shadows Rising", category: "The MMO Era", rating: "3.85", synopsis: "The Horde and Alliance hunt for Sylvanas and Nathanos in the aftermath of the Fourth War." },
-            { id: 25, title: "Sylvanas", category: "The MMO Era", rating: "4.32", synopsis: "An intimate look into the long afterlife of the Banshee Queen and her motivations leading into the Shadowlands." },
-            { id: 26, title: "War of the Scaleborn", category: "The MMO Era", rating: "4.10", synopsis: "An ancient history of the conflict between the empowered Dragon Aspects and the elemental Primalists." },
-            { id: 27, title: "Blood Ties", category: "The MMO Era", rating: "TBD", synopsis: "Sets the stage for the Midnight expansion as the void forces prepare to strike at the heart of Azeroth." }
+            // The Foundations
+            { id: 1, title: "Rise of the Horde", category: "The Foundations", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. Details their tragic fall into bloodlust orchestrated by the Burning Legion.", cover: "Images/rise-of-the-horde.jpg" },
+            { id: 2, title: "The Last Guardian", category: "The Foundations", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence. His apprentice, Khadgar, must uncover his secrets as the Horde pours into Azeroth.", cover: "Images/the-last-guardian.jpg" },
+            { id: 3, title: "Tides of Darkness", category: "The Foundations", rating: "4.15", synopsis: "Following the fall of Stormwind, survivors flee to Lordaeron to forge a grand Alliance and halt the Orcish Horde's march.", cover: "Images/tides-of-darkness.jpg" },
+            { id: 4, title: "Beyond the Dark Portal", category: "The Foundations", rating: "4.13", synopsis: "The Alliance expedition pushes through the portal into Draenor to stop the orcish threat at its source.", cover: "Images/beyond-the-dark-portal.jpg" },
+            { id: 5, title: "Day of the Dragon", category: "The Foundations", rating: "4.05", synopsis: "Set after the Second War, focusing on the mage Rhonin and the liberation of the Dragonqueen Alexstrasza from the Dragonmaw Clan.", cover: "Images/day-of-the-dragon.jpg" },
+            
+            // Time Travel & Third War
+            { id: 6, title: "The Well of Eternity", category: "Time Travel & 3rd War", rating: "4.20", synopsis: "Modern heroes are cast 10,000 years into the past during the Burning Legion's first invasion of Azeroth.", cover: "Images/the-well-of-eternity.jpg" },
+            { id: 7, title: "The Demon Soul", category: "Time Travel & 3rd War", rating: "4.22", synopsis: "Part two of the War of the Ancients. Deathwing's betrayal is revealed as the defenders of Azeroth struggle to survive.", cover: "Images/the-demon-soul.jpg" },
+            { id: 8, title: "The Sundering", category: "Time Travel & 3rd War", rating: "4.26", synopsis: "The conclusion to the War of the Ancients. The Well of Eternity collapses, reshaping the continents of Azeroth forever.", cover: "Images/the-sundering.jpg" },
+            { id: 9, title: "Lord of the Clans", category: "Time Travel & 3rd War", rating: "4.26", synopsis: "Raised as a gladiator slave, the young orc Thrall escapes to master shamanism and unite the scattered orc clans into a new Horde.", cover: "Images/lord-of-the-clans.jpg" },
+            { id: 10, title: "Of Blood and Honor", category: "Time Travel & 3rd War", rating: "4.03", synopsis: "The paladin Tirion Fordring risks everything when he makes a fateful connection with the honorable orc Eitrigg.", cover: "Images/of-blood-and-honor.jpg" },
+            { id: 11, title: "Arthas: Rise of the Lich King", category: "Time Travel & 3rd War", rating: "4.35", synopsis: "Prince Arthas Menethil makes terrible sacrifices to save his people, a tragic path that leads him to the Frozen Throne.", cover: "Images/arthas-rise-of-the-lich-king.jpg" },
+            { id: 12, title: "Illidan", category: "Time Travel & 3rd War", rating: "4.24", synopsis: "Follows Illidan Stormrage from his release in Warcraft III through his rule over Outland.", cover: "Images/illidan.jpg" },
+            
+            // The MMO Era
+            { id: 13, title: "Cycle of Hatred", category: "The MMO Era", rating: "3.55", synopsis: "Set shortly before Vanilla WoW, exploring the fragile peace between the Horde and Alliance in Kalimdor.", cover: "Images/cycle-of-hatred.jpg" },
+            { id: 14, title: "Night of the Dragon", category: "The MMO Era", rating: "3.95", synopsis: "A sequel to Day of the Dragon, returning to Grim Batol to face the sinister Twilight Dragonflight.", cover: "Images/night-of-the-dragon.jpg" },
+            { id: 15, title: "Stormrage", category: "The MMO Era", rating: "3.90", synopsis: "Malfurion Stormrage is trapped in the Emerald Nightmare, and his allies must fight to awaken him before the corruption spreads.", cover: "Images/stormrage.jpg" },
+            { id: 16, title: "The Shattering", category: "The MMO Era", rating: "4.05", synopsis: "As Thrall steps down to heal the world, Garrosh Hellscream takes command, heightening faction tensions.", cover: "Images/the-shattering.jpg" },
+            { id: 17, title: "Wolfheart", category: "The MMO Era", rating: "3.90", synopsis: "King Varian Wrynn struggles to accept the Worgen into the Alliance while Garrosh presses his assault on Ashenvale.", cover: "Images/wolfheart.jpg" },
+            { id: 18, title: "Thrall: Twilight of the Aspects", category: "The MMO Era", rating: "4.08", synopsis: "Thrall journeys across time and space to aid the Dragon Aspects in their fight against the Twilight's Hammer.", cover: "Images/thrall-twilight-of-the-aspects.jpg" },
+            { id: 19, title: "Jaina Proudmoore: Tides of War", category: "The MMO Era", rating: "4.21", synopsis: "The tragic destruction of Theramore pushes Jaina Proudmoore to the brink, altering her path forever.", cover: "Images/jaina-proudmoore-tides-of-war.jpg" },
+            { id: 20, title: "Dawn of the Aspects", category: "The MMO Era", rating: "4.07", synopsis: "Kalecgos experiences visions of the ancient proto-dragons and their original battle against Galakrond.", cover: "Images/dawn-of-the-aspects.jpg" },
+            { id: 21, title: "Vol'jin: Shadows of the Horde", category: "The MMO Era", rating: "4.22", synopsis: "Recovering from an assassination attempt in Pandaria, Vol'jin must defend a monastery against the Zandalari.", cover: "Images/voljin-shadows-of-the-horde.jpg" },
+            { id: 22, title: "War Crimes", category: "The MMO Era", rating: "4.15", synopsis: "Garrosh Hellscream stands trial in Pandaria, forcing leaders from both factions to confront their own pasts.", cover: "Images/war-crimes.jpg" },
+            { id: 23, title: "Before the Storm", category: "The MMO Era", rating: "3.95", synopsis: "Anduin Wrynn and Sylvanas Windrunner attempt to navigate a tenuous peace after the defeat of the Burning Legion.", cover: "Images/before-the-storm.jpg" },
+            { id: 24, title: "Shadows Rising", category: "The MMO Era", rating: "3.85", synopsis: "The Horde and Alliance hunt for Sylvanas and Nathanos in the aftermath of the Fourth War.", cover: "Images/shadows-rising.jpg" },
+            { id: 25, title: "Sylvanas", category: "The MMO Era", rating: "4.32", synopsis: "An intimate look into the long afterlife of the Banshee Queen and her motivations leading into the Shadowlands.", cover: "Images/sylvanas.jpg" },
+            { id: 26, title: "War of the Scaleborn", category: "The MMO Era", rating: "4.10", synopsis: "An ancient history of the conflict between the empowered Dragon Aspects and the elemental Primalists.", cover: "Images/war-of-the-scaleborn.jpg" },
+            { id: 27, title: "Blood Ties", category: "The MMO Era", rating: "TBD", synopsis: "Sets the stage for the Midnight expansion as the void forces prepare to strike at the heart of Azeroth.", cover: "Images/blood-ties.jpg" }
         ];
 
         let readStatus = JSON.parse(localStorage.getItem('wowBooksRead')) || {};
@@ -303,8 +285,7 @@
                     
                     card.innerHTML = `
                         <div class="book-cover">
-                            <div class="cover-badge">WoW Lore</div>
-                            <div class="cover-title">${book.title}</div>
+                            <img src="${book.cover}" alt="${book.title} Cover" onerror="this.onerror=null; this.src='https://placehold.co/100x150/1a1c23/c69b6d?text=No+Cover';">
                         </div>
                         <div class="book-info">
                             <div class="card-header">
