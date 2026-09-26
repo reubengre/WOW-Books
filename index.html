@@ -8,54 +8,65 @@
     <meta name="theme-color" content="#c69b6d">
     <style>
         :root {
-            --bg-color: #0d0f12;
-            --card-bg: #1a1c23;
+            --bg-color: #0b0c10;
+            --card-bg: #15161c;
             --text-main: #e4d8c5;
             --text-muted: #8e8c89;
-            --gold-accent: #c69b6d;
-            --gold-hover: #e3bc89;
-            --read-bg: #122119;
-            --read-border: #2e6642;
-            --danger: #8a2525;
-            --danger-hover: #ba3232;
+            --gold-accent: #f8b700;
+            --gold-muted: #c69b6d;
+            --gold-border: #4a3a25;
+            --read-bg: #0d1a13;
+            --read-border: #224d31;
+            --danger: #7a1d1d;
+            --horde-red: #4a0000;
+            --ui-font: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
         }
 
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             font-family: system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top, #1a1c23 0%, #0b0c10 100%);
+            background-attachment: fixed;
             color: var(--text-main);
             padding: 16px;
             line-height: 1.5;
+            min-height: 100vh;
         }
 
         header {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 12px;
+            gap: 16px;
             margin-bottom: 24px;
-            border-bottom: 1px solid var(--gold-accent);
-            padding-bottom: 12px;
+            border-bottom: 2px solid var(--gold-border);
+            padding-bottom: 16px;
+            background: linear-gradient(90deg, transparent, rgba(198, 155, 109, 0.1), transparent);
         }
 
         .header-logo {
-            width: 38px;
-            height: 38px;
+            width: 44px;
+            height: 44px;
             border-radius: 8px;
             object-fit: cover;
+            border: 2px solid var(--gold-muted);
+            box-shadow: 0 0 10px rgba(198, 155, 109, 0.3);
         }
 
         h1 {
             color: var(--gold-accent);
-            font-size: 1.5rem;
+            font-family: var(--ui-font);
+            font-size: 1.8rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         .controls {
@@ -74,53 +85,72 @@
             width: 100%;
             padding: 12px;
             background-color: var(--card-bg);
-            border: 1px solid var(--gold-accent);
+            border: 1px solid var(--gold-border);
             border-radius: 4px;
             color: var(--text-main);
             font-size: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--gold-muted);
         }
 
         .btn-secondary {
             flex: 1;
-            background: none;
-            border: 1px solid var(--text-muted);
-            color: var(--text-muted);
-            padding: 8px;
+            background: linear-gradient(to bottom, #2a2c35, #1a1c23);
+            border: 1px solid var(--gold-border);
+            color: var(--gold-muted);
+            padding: 10px;
             border-radius: 4px;
             cursor: pointer;
             font-size: 0.85rem;
+            font-family: var(--ui-font);
+            text-transform: uppercase;
+            font-weight: bold;
         }
 
         .book-list {
             display: flex;
             flex-direction: column;
             gap: 16px;
+            padding-bottom: 40px;
         }
 
         .book-card {
             display: flex;
             background-color: var(--card-bg);
-            border: 1px solid #333;
-            border-radius: 8px;
+            background-image: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+            border: 1px solid var(--gold-border);
+            border-radius: 6px;
             overflow: hidden;
             position: relative;
             cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            transition: transform 0.1s ease, box-shadow 0.1s ease;
+        }
+
+        .book-card.dragging {
+            opacity: 0.8;
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.8);
+            z-index: 100;
         }
 
         .book-card.read {
             background-color: var(--read-bg);
             border-color: var(--read-border);
-            opacity: 0.85;
         }
 
         .book-cover {
             flex-shrink: 0;
-            background-color: #15171e;
+            background-color: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-right: 1px solid #2a2d36;
-            transition: all 0.2s ease;
+            border-right: 1px solid var(--gold-border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .book-cover img {
@@ -131,8 +161,8 @@
 
         /* Minimized State: Large Cover + Title */
         .book-card.minimized .book-cover {
-            width: 140px;
-            height: 200px;
+            width: 130px;
+            height: 195px;
         }
 
         .book-card.minimized .book-synopsis,
@@ -143,7 +173,7 @@
 
         /* Expanded State: Smaller Cover + Full Details */
         .book-card:not(.minimized) .book-cover {
-            width: 95px;
+            width: 90px;
             height: 140px;
         }
 
@@ -152,14 +182,30 @@
             display: flex;
             flex-direction: column;
             flex-grow: 1;
+            position: relative;
         }
 
         .card-header {
             display: flex;
             align-items: flex-start;
-            justify-content: space-between;
-            gap: 8px;
+            gap: 12px;
             margin-bottom: 4px;
+        }
+
+        .drag-handle {
+            color: var(--gold-muted);
+            font-size: 1.5rem;
+            cursor: grab;
+            user-select: none;
+            padding: 0 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.6;
+        }
+        
+        .drag-handle:active {
+            cursor: grabbing;
         }
 
         .header-text {
@@ -167,40 +213,45 @@
         }
 
         .category-tag {
-            font-size: 0.75rem;
-            color: var(--gold-accent);
+            font-size: 0.7rem;
+            color: var(--gold-muted);
             text-transform: uppercase;
-            margin-bottom: 2px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
         }
 
         .card-indicator {
-            font-size: 1.2rem;
-            color: var(--text-muted);
+            font-size: 1.5rem;
+            color: var(--gold-muted);
             flex-shrink: 0;
-            width: 20px;
             text-align: right;
-            padding-top: 2px;
+            line-height: 1;
+            font-weight: 300;
         }
 
         .book-title {
-            font-size: 1.1rem;
+            font-family: var(--ui-font);
+            font-size: 1.15rem;
             font-weight: bold;
+            color: var(--gold-accent);
             margin-bottom: 4px;
+            line-height: 1.2;
         }
 
         .book-rating {
             font-size: 0.85rem;
             color: var(--text-muted);
-            margin-bottom: 8px;
+            margin-bottom: 10px;
         }
 
         .star { color: var(--gold-accent); }
 
         .book-synopsis {
             font-size: 0.85rem;
-            color: #b5b5b5;
-            margin-bottom: 12px;
+            color: #c4c4c4;
+            margin-bottom: 16px;
             flex-grow: 1;
+            line-height: 1.4;
         }
 
         .book-actions {
@@ -209,26 +260,43 @@
             margin-top: auto;
         }
 
-        button {
+        button.action-btn {
             flex: 1;
-            padding: 8px;
-            border: none;
+            padding: 10px;
+            border: 1px solid transparent;
             border-radius: 4px;
             font-weight: bold;
             font-size: 0.85rem;
+            font-family: var(--ui-font);
+            text-transform: uppercase;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
 
-        .btn-read { background-color: var(--gold-accent); color: #000; }
-        .book-card.read .btn-read { background-color: var(--read-border); color: white; }
-        .btn-hide { background-color: var(--danger); color: white; }
+        .btn-read { 
+            background: linear-gradient(to bottom, #d4a976, #b0814a); 
+            color: #2a1f12; 
+            border-color: #f8b700;
+        }
+        
+        .book-card.read .btn-read { 
+            background: linear-gradient(to bottom, #2b6140, #1c452b); 
+            color: #a3d9b8; 
+            border-color: #3e8a5a;
+        }
+
+        .btn-hide { 
+            background: linear-gradient(to bottom, #8a2525, #5c1616); 
+            color: #f0caca;
+            border-color: #a33535;
+        }
 
     </style>
 </head>
 <body>
 
     <header>
-        <img src="Images/icon.svg" alt="Logo" class="header-logo">
+        <img src="Images/icon.svg" alt="WoW Library Logo" class="header-logo" onerror="this.style.display='none'">
         <h1>WoW Library</h1>
     </header>
 
@@ -236,14 +304,14 @@
         <input type="text" id="searchInput" placeholder="Search by title or category...">
         <div class="button-group">
             <button class="btn-secondary" onclick="toggleAllMinimize()">Toggle Minimize</button>
-            <button class="btn-secondary" onclick="resetHidden()">Show Hidden Books</button>
+            <button class="btn-secondary" onclick="resetHidden()">Show Hidden</button>
         </div>
     </div>
 
     <main class="book-list" id="bookContainer"></main>
 
     <script>
-        const books = [
+        let books = [
             // The Foundations
             { id: 1, title: "Rise of the Horde", category: "The Foundations", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. Details their tragic fall into bloodlust orchestrated by the Burning Legion.", cover: "Images/rise-of-the-horde.jpg" },
             { id: 2, title: "The Last Guardian", category: "The Foundations", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence. His apprentice, Khadgar, must uncover his secrets as the Horde pours into Azeroth.", cover: "Images/the-last-guardian.jpg" },
@@ -281,6 +349,18 @@
         let readStatus = JSON.parse(localStorage.getItem('wowBooksRead')) || {};
         let hiddenStatus = JSON.parse(localStorage.getItem('wowBooksHidden')) || {};
         let minStatus = JSON.parse(localStorage.getItem('wowBooksMin')) || {};
+        let customOrder = JSON.parse(localStorage.getItem('wowBooksOrder')) || [];
+
+        // Apply saved custom order if it exists
+        if (customOrder.length > 0) {
+            books.sort((a, b) => {
+                let indexA = customOrder.indexOf(a.id);
+                let indexB = customOrder.indexOf(b.id);
+                if (indexA === -1) indexA = 999; 
+                if (indexB === -1) indexB = 999;
+                return indexA - indexB;
+            });
+        }
 
         // Default all books to minimized (large cover view) on first load
         books.forEach(book => {
@@ -315,14 +395,16 @@
                     
                     const card = document.createElement('div');
                     card.className = `book-card ${isRead ? 'read' : ''} ${isMin ? 'minimized' : ''}`;
+                    card.dataset.id = book.id;
                     card.onclick = (e) => handleCardClick(e, book.id);
                     
                     card.innerHTML = `
                         <div class="book-cover">
-                            <img src="${book.cover}" alt="${book.title} Cover" onerror="this.onerror=null; this.src='https://placehold.co/140x200/1a1c23/c69b6d?text=No+Cover';">
+                            <img src="${book.cover}" alt="${book.title} Cover" onerror="this.onerror=null; this.src='https://placehold.co/130x195/15161c/c69b6d?text=No+Cover';">
                         </div>
                         <div class="book-info">
                             <div class="card-header">
+                                <div class="drag-handle" onclick="event.stopPropagation()">☰</div>
                                 <div class="header-text">
                                     <div class="category-tag">${book.category}</div>
                                     <div class="book-title">${book.title}</div>
@@ -334,10 +416,10 @@
                             </div>
                             <div class="book-synopsis">${book.synopsis}</div>
                             <div class="book-actions">
-                                <button class="btn-read" onclick="event.stopPropagation(); toggleRead(${book.id})">
+                                <button class="action-btn btn-read" onclick="event.stopPropagation(); toggleRead(${book.id})">
                                     ${isRead ? '✓ Read' : 'Mark as Read'}
                                 </button>
-                                <button class="btn-hide" onclick="event.stopPropagation(); hideBook(${book.id})">Hide</button>
+                                <button class="action-btn btn-hide" onclick="event.stopPropagation(); hideBook(${book.id})">Hide</button>
                             </div>
                         </div>
                     `;
@@ -347,7 +429,8 @@
         }
 
         window.handleCardClick = function(event, id) {
-            if (event.target.tagName === 'BUTTON' || event.target.closest('button')) {
+            // Do not toggle if the user clicked a button or the drag handle
+            if (event.target.tagName === 'BUTTON' || event.target.closest('button') || event.target.classList.contains('drag-handle')) {
                 return;
             }
             toggleMin(id);
@@ -384,6 +467,56 @@
             renderBooks();
         };
 
+        // Custom Touch Drag & Drop Reordering
+        let draggedItem = null;
+
+        container.addEventListener('touchstart', (e) => {
+            if (e.target.classList.contains('drag-handle')) {
+                draggedItem = e.target.closest('.book-card');
+                draggedItem.classList.add('dragging');
+                document.body.style.overflow = 'hidden'; // Stop page scrolling
+            }
+        }, {passive: false});
+
+        container.addEventListener('touchmove', (e) => {
+            if (!draggedItem) return;
+            e.preventDefault();
+            
+            const touch = e.touches[0];
+            const elementUnderFinger = document.elementFromPoint(touch.clientX, touch.clientY);
+            
+            if (elementUnderFinger) {
+                const targetCard = elementUnderFinger.closest('.book-card');
+                if (targetCard && targetCard !== draggedItem) {
+                    const rect = targetCard.getBoundingClientRect();
+                    const next = (touch.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+                    container.insertBefore(draggedItem, next ? targetCard.nextSibling : targetCard);
+                }
+            }
+        }, {passive: false});
+
+        container.addEventListener('touchend', (e) => {
+            if (!draggedItem) return;
+            draggedItem.classList.remove('dragging');
+            draggedItem = null;
+            document.body.style.overflow = '';
+            
+            // Save new order to array and localStorage
+            const currentCards = Array.from(container.querySelectorAll('.book-card'));
+            const newOrder = currentCards.map(card => parseInt(card.dataset.id));
+            localStorage.setItem('wowBooksOrder', JSON.stringify(newOrder));
+            
+            // Re-sort the main books array so search/filter respects it
+            books.sort((a, b) => {
+                let indexA = newOrder.indexOf(a.id);
+                let indexB = newOrder.indexOf(b.id);
+                if(indexA === -1) indexA = 999;
+                if(indexB === -1) indexB = 999;
+                return indexA - indexB;
+            });
+        });
+
+        // Event listeners
         searchInput.addEventListener('input', renderBooks);
         renderBooks();
 
@@ -391,8 +524,8 @@
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
-                    .then((reg) => console.log('Service Worker registered!', reg))
-                    .catch((err) => console.log('Service Worker registration failed:', err));
+                    .then((reg) => console.log('Service Worker registered!'))
+                    .catch((err) => console.log('Service Worker registration failed:'));
             });
         }
     </script>
