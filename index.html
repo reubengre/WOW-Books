@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WoW Lore Reading Library</title>
+    <title>WoW Library</title>
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#c69b6d">
     <style>
@@ -35,8 +35,20 @@
         }
 
         header {
-            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
             margin-bottom: 24px;
+            border-bottom: 1px solid var(--gold-accent);
+            padding-bottom: 12px;
+        }
+
+        .header-logo {
+            width: 38px;
+            height: 38px;
+            border-radius: 8px;
+            object-fit: cover;
         }
 
         h1 {
@@ -44,9 +56,6 @@
             font-size: 1.5rem;
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-bottom: 16px;
-            border-bottom: 1px solid var(--gold-accent);
-            padding-bottom: 8px;
         }
 
         .controls {
@@ -95,6 +104,7 @@
             border-radius: 8px;
             overflow: hidden;
             position: relative;
+            cursor: pointer;
         }
 
         .book-card.read {
@@ -147,6 +157,7 @@
         .card-header {
             display: flex;
             align-items: flex-start;
+            justify-content: space-between;
             gap: 8px;
             margin-bottom: 4px;
         }
@@ -162,17 +173,13 @@
             margin-bottom: 2px;
         }
 
-        .btn-minimize {
-            background: none;
-            border: none;
-            color: var(--text-muted);
+        .card-indicator {
             font-size: 1.2rem;
-            line-height: 1;
-            cursor: pointer;
-            padding-top: 2px;
+            color: var(--text-muted);
             flex-shrink: 0;
             width: 20px;
-            text-align: left;
+            text-align: right;
+            padding-top: 2px;
         }
 
         .book-title {
@@ -221,15 +228,17 @@
 <body>
 
     <header>
-        <h1>WoW Reading Tracker</h1>
-        <div class="controls">
-            <input type="text" id="searchInput" placeholder="Search by title or category...">
-            <div class="button-group">
-                <button class="btn-secondary" onclick="toggleAllMinimize()">Toggle Minimize</button>
-                <button class="btn-secondary" onclick="resetHidden()">Show Hidden Books</button>
-            </div>
-        </div>
+        <img src="Images/icon.svg" alt="Logo" class="header-logo">
+        <h1>WoW Library</h1>
     </header>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search by title or category...">
+        <div class="button-group">
+            <button class="btn-secondary" onclick="toggleAllMinimize()">Toggle Minimize</button>
+            <button class="btn-secondary" onclick="resetHidden()">Show Hidden Books</button>
+        </div>
+    </div>
 
     <main class="book-list" id="bookContainer"></main>
 
@@ -306,6 +315,7 @@
                     
                     const card = document.createElement('div');
                     card.className = `book-card ${isRead ? 'read' : ''} ${isMin ? 'minimized' : ''}`;
+                    card.onclick = (e) => handleCardClick(e, book.id);
                     
                     card.innerHTML = `
                         <div class="book-cover">
@@ -313,21 +323,21 @@
                         </div>
                         <div class="book-info">
                             <div class="card-header">
-                                <button class="btn-minimize" onclick="toggleMin(${book.id})">${isMin ? '+' : '−'}</button>
                                 <div class="header-text">
                                     <div class="category-tag">${book.category}</div>
                                     <div class="book-title">${book.title}</div>
                                 </div>
+                                <div class="card-indicator">${isMin ? '+' : '−'}</div>
                             </div>
                             <div class="book-rating">
                                 <span class="star">★</span> ${book.rating} / 5.00
                             </div>
                             <div class="book-synopsis">${book.synopsis}</div>
                             <div class="book-actions">
-                                <button class="btn-read" onclick="toggleRead(${book.id})">
+                                <button class="btn-read" onclick="event.stopPropagation(); toggleRead(${book.id})">
                                     ${isRead ? '✓ Read' : 'Mark as Read'}
                                 </button>
-                                <button class="btn-hide" onclick="hideBook(${book.id})">Hide</button>
+                                <button class="btn-hide" onclick="event.stopPropagation(); hideBook(${book.id})">Hide</button>
                             </div>
                         </div>
                     `;
@@ -335,6 +345,13 @@
                 }
             });
         }
+
+        window.handleCardClick = function(event, id) {
+            if (event.target.tagName === 'BUTTON' || event.target.closest('button')) {
+                return;
+            }
+            toggleMin(id);
+        };
 
         window.toggleRead = function(id) {
             readStatus[id] = !readStatus[id];
