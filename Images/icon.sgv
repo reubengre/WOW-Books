@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+    <!-- Background / Leather Cover -->
+    <rect width="512" height="512" rx="90" fill="#20150e"/>
+    <rect x="20" y="20" width="472" height="472" rx="75" fill="#2b1d11" stroke="#c69b6d" stroke-width="12"/>
+    
+    <!-- Inner Gold Filigree / Border -->
+    <rect x="45" y="45" width="422" height="422" rx="55" fill="none" stroke="#c69b6d" stroke-width="4" opacity="0.8"/>
+    
+    <!-- Spine Line -->
+    <path d="M 256 60 L 256 452" stroke="#100b07" stroke-width="16" opacity="0.5"/>
+    
+    <!-- Corner Metal Brackets -->
+    <path d="M 45 45 L 90 45 L 45 90 Z" fill="#c69b6d"/>
+    <path d="M 467 45 L 422 45 L 467 90 Z" fill="#c69b6d"/>
+    <path d="M 45 467 L 90 467 L 45 422 Z" fill="#c69b6d"/>
+    <path d="M 467 467 L 422 467 L 467 422 Z" fill="#c69b6d"/>
+    
+    <!-- Center Emblem Circle -->
+    <circle cx="256" cy="256" r="110" fill="#15100a" stroke="#c69b6d" stroke-width="8"/>
+    <circle cx="256" cy="256" r="95" fill="none" stroke="#c69b6d" stroke-width="2" stroke-dasharray="8 4"/>
+    
+    <!-- Glowing Core Emblem -->
+    <text x="256" y="295" font-family="Georgia, serif" font-size="130" font-weight="bold" fill="#c69b6d" text-anchor="middle" filter="drop-shadow(0px 0px 10px #e3bc89)">W</text>
+</svg>
