@@ -54,6 +54,11 @@
             margin-bottom: 24px;
         }
 
+        .button-group {
+            display: flex;
+            gap: 8px;
+        }
+
         input[type="text"] {
             width: 100%;
             padding: 12px;
@@ -64,14 +69,15 @@
             font-size: 1rem;
         }
 
-        .btn-reset {
+        .btn-secondary {
+            flex: 1;
             background: none;
             border: 1px solid var(--text-muted);
             color: var(--text-muted);
             padding: 8px;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .book-list {
@@ -86,6 +92,7 @@
             border: 1px solid #333;
             border-radius: 8px;
             overflow: hidden;
+            position: relative;
         }
 
         .book-card.read {
@@ -94,20 +101,16 @@
             opacity: 0.85;
         }
 
-        /* Pure CSS Cover replacing the external images */
         .book-cover {
-            width: 90px;
+            width: 100px;
             flex-shrink: 0;
-            background-color: #2a2d36;
-            border-right: 1px solid #111;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 8px;
-            text-align: center;
-            font-size: 0.75rem;
-            font-weight: bold;
-            color: var(--gold-accent);
+            background-color: #222;
+        }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .book-info {
@@ -117,6 +120,12 @@
             flex-grow: 1;
         }
 
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
         .category-tag {
             font-size: 0.75rem;
             color: var(--gold-accent);
@@ -124,10 +133,21 @@
             margin-bottom: 4px;
         }
 
+        .btn-minimize {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            line-height: 1;
+            cursor: pointer;
+            padding: 0 4px;
+        }
+
         .book-title {
             font-size: 1.1rem;
             font-weight: bold;
             margin-bottom: 4px;
+            padding-right: 20px;
         }
 
         .book-rating {
@@ -151,6 +171,17 @@
             margin-top: auto;
         }
 
+        /* Minimized State */
+        .book-card.minimized .book-synopsis {
+            display: none;
+        }
+        .book-card.minimized .book-actions {
+            display: none;
+        }
+        .book-card.minimized .book-cover {
+            width: 60px;
+        }
+
         button {
             flex: 1;
             padding: 8px;
@@ -164,16 +195,7 @@
         .btn-read { background-color: var(--gold-accent); color: #000; }
         .book-card.read .btn-read { background-color: var(--read-border); color: white; }
         .btn-hide { background-color: var(--danger); color: white; }
-        
-        .error-box {
-            background: rgba(138, 37, 37, 0.2);
-            border: 1px solid var(--danger);
-            color: #ff9999;
-            padding: 12px;
-            border-radius: 4px;
-            margin-bottom: 16px;
-            font-size: 0.85rem;
-        }
+
     </style>
 </head>
 <body>
@@ -182,130 +204,143 @@
         <h1>WoW Reading Tracker</h1>
         <div class="controls">
             <input type="text" id="searchInput" placeholder="Search by title or category...">
-            <button class="btn-reset" onclick="resetHidden()">Show Hidden Books</button>
+            <div class="button-group">
+                <button class="btn-secondary" onclick="toggleAllMinimize()">Toggle Minimize</button>
+                <button class="btn-secondary" onclick="resetHidden()">Show Hidden</button>
+            </div>
         </div>
     </header>
 
-    <main class="book-list" id="bookContainer">
-        <!-- JS will render here -->
-    </main>
+    <main class="book-list" id="bookContainer"></main>
 
     <script>
+        const books = [
+            // The Foundations
+            { id: 1, title: "Rise of the Horde", category: "The Foundations", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. Details their tragic fall into bloodlust orchestrated by the Burning Legion.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Rise+of+Horde" },
+            { id: 2, title: "The Last Guardian", category: "The Foundations", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence. His apprentice, Khadgar, must uncover his secrets as the Horde pours into Azeroth.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Last+Guardian" },
+            { id: 3, title: "Tides of Darkness", category: "The Foundations", rating: "4.15", synopsis: "Following the fall of Stormwind, survivors flee to Lordaeron to forge a grand Alliance and halt the Orcish Horde's march.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Tides+Darkness" },
+            { id: 4, title: "Beyond the Dark Portal", category: "The Foundations", rating: "4.13", synopsis: "The Alliance expedition pushes through the portal into Draenor to stop the orcish threat at its source.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Beyond+Portal" },
+            { id: 5, title: "Day of the Dragon", category: "The Foundations", rating: "4.05", synopsis: "Set after the Second War, focusing on the mage Rhonin and the liberation of the Dragonqueen Alexstrasza from the Dragonmaw Clan.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Day+of+Dragon" },
+            
+            // Time Travel & Third War
+            { id: 6, title: "The Well of Eternity", category: "Time Travel & 3rd War", rating: "4.20", synopsis: "Modern heroes are cast 10,000 years into the past during the Burning Legion's first invasion of Azeroth.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Well+Eternity" },
+            { id: 7, title: "The Demon Soul", category: "Time Travel & 3rd War", rating: "4.22", synopsis: "Part two of the War of the Ancients. Deathwing's betrayal is revealed as the defenders of Azeroth struggle to survive.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Demon+Soul" },
+            { id: 8, title: "The Sundering", category: "Time Travel & 3rd War", rating: "4.26", synopsis: "The conclusion to the War of the Ancients. The Well of Eternity collapses, reshaping the continents of Azeroth forever.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=The+Sundering" },
+            { id: 9, title: "Lord of the Clans", category: "Time Travel & 3rd War", rating: "4.26", synopsis: "Raised as a gladiator slave, the young orc Thrall escapes to master shamanism and unite the scattered orc clans into a new Horde.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Lord+of+Clans" },
+            { id: 10, title: "Of Blood and Honor", category: "Time Travel & 3rd War", rating: "4.03", synopsis: "The paladin Tirion Fordring risks everything when he makes a fateful connection with the honorable orc Eitrigg.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Blood+Honor" },
+            { id: 11, title: "Arthas: Rise of the Lich King", category: "Time Travel & 3rd War", rating: "4.35", synopsis: "Prince Arthas Menethil makes terrible sacrifices to save his people, a tragic path that leads him to the Frozen Throne.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Arthas" },
+            { id: 12, title: "Illidan", category: "Time Travel & 3rd War", rating: "4.24", synopsis: "Follows Illidan Stormrage from his release in Warcraft III through his rule over Outland.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Illidan" },
+            
+            // The MMO Era
+            { id: 13, title: "Cycle of Hatred", category: "The MMO Era", rating: "3.55", synopsis: "Set shortly before Vanilla WoW, exploring the fragile peace between the Horde and Alliance in Kalimdor.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Cycle+Hatred" },
+            { id: 14, title: "Night of the Dragon", category: "The MMO Era", rating: "3.95", synopsis: "A sequel to Day of the Dragon, returning to Grim Batol to face the sinister Twilight Dragonflight.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Night+Dragon" },
+            { id: 15, title: "Stormrage", category: "The MMO Era", rating: "3.90", synopsis: "Malfurion Stormrage is trapped in the Emerald Nightmare, and his allies must fight to awaken him before the corruption spreads.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Stormrage" },
+            { id: 16, title: "The Shattering", category: "The MMO Era", rating: "4.05", synopsis: "As Thrall steps down to heal the world, Garrosh Hellscream takes command, heightening faction tensions.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=The+Shattering" },
+            { id: 17, title: "Wolfheart", category: "The MMO Era", rating: "3.90", synopsis: "King Varian Wrynn struggles to accept the Worgen into the Alliance while Garrosh presses his assault on Ashenvale.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Wolfheart" },
+            { id: 18, title: "Thrall: Twilight of the Aspects", category: "The MMO Era", rating: "4.08", synopsis: "Thrall journeys across time and space to aid the Dragon Aspects in their fight against the Twilight's Hammer.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Twilight+Aspects" },
+            { id: 19, title: "Jaina Proudmoore: Tides of War", category: "The MMO Era", rating: "4.21", synopsis: "The tragic destruction of Theramore pushes Jaina Proudmoore to the brink, altering her path forever.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Tides+of+War" },
+            { id: 20, title: "Dawn of the Aspects", category: "The MMO Era", rating: "4.07", synopsis: "Kalecgos experiences visions of the ancient proto-dragons and their original battle against Galakrond.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Dawn+Aspects" },
+            { id: 21, title: "Vol'jin: Shadows of the Horde", category: "The MMO Era", rating: "4.22", synopsis: "Recovering from an assassination attempt in Pandaria, Vol'jin must defend a monastery against the Zandalari.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Shadows+Horde" },
+            { id: 22, title: "War Crimes", category: "The MMO Era", rating: "4.15", synopsis: "Garrosh Hellscream stands trial in Pandaria, forcing leaders from both factions to confront their own pasts.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=War+Crimes" },
+            { id: 23, title: "Before the Storm", category: "The MMO Era", rating: "3.95", synopsis: "Anduin Wrynn and Sylvanas Windrunner attempt to navigate a tenuous peace after the defeat of the Burning Legion.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Before+Storm" },
+            { id: 24, title: "Shadows Rising", category: "The MMO Era", rating: "3.85", synopsis: "The Horde and Alliance hunt for Sylvanas and Nathanos in the aftermath of the Fourth War.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Shadows+Rising" },
+            { id: 25, title: "Sylvanas", category: "The MMO Era", rating: "4.32", synopsis: "An intimate look into the long afterlife of the Banshee Queen and her motivations leading into the Shadowlands.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Sylvanas" },
+            { id: 26, title: "War of the Scaleborn", category: "The MMO Era", rating: "4.10", synopsis: "An ancient history of the conflict between the empowered Dragon Aspects and the elemental Primalists.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Scaleborn" },
+            { id: 27, title: "Blood Ties", category: "The MMO Era", rating: "TBD", synopsis: "Sets the stage for the Midnight expansion as the void forces prepare to strike at the heart of Azeroth.", cover: "https://placehold.co/150x225/1a1c23/c69b6d?text=Blood+Ties" }
+        ];
+
+        let readStatus = JSON.parse(localStorage.getItem('wowBooksRead')) || {};
+        let hiddenStatus = JSON.parse(localStorage.getItem('wowBooksHidden')) || {};
+        let minStatus = JSON.parse(localStorage.getItem('wowBooksMin')) || {};
+        let allMinimized = false;
+
         const container = document.getElementById('bookContainer');
-        
-        // CATCH-ALL ERROR LOGGER: Will print errors directly to the screen
-        window.onerror = function(message, source, lineno, colno, error) {
-            container.innerHTML += `<div class="error-box"><b>Browser Block/Crash Detected:</b> ${message} (Line ${lineno})</div>`;
-            return true;
+        const searchInput = document.getElementById('searchInput');
+
+        function saveState() {
+            localStorage.setItem('wowBooksRead', JSON.stringify(readStatus));
+            localStorage.setItem('wowBooksHidden', JSON.stringify(hiddenStatus));
+            localStorage.setItem('wowBooksMin', JSON.stringify(minStatus));
+        }
+
+        function renderBooks() {
+            container.innerHTML = ''; 
+            const searchTerm = searchInput.value.toLowerCase();
+
+            books.forEach(book => {
+                if (hiddenStatus[book.id]) return;
+
+                if (book.title.toLowerCase().includes(searchTerm) || 
+                    book.category.toLowerCase().includes(searchTerm)) {
+                    
+                    const isRead = readStatus[book.id];
+                    const isMin = minStatus[book.id];
+                    
+                    const card = document.createElement('div');
+                    card.className = `book-card ${isRead ? 'read' : ''} ${isMin ? 'minimized' : ''}`;
+                    
+                    card.innerHTML = `
+                        <div class="book-cover">
+                            <img src="${book.cover}" alt="Cover">
+                        </div>
+                        <div class="book-info">
+                            <div class="card-header">
+                                <div>
+                                    <div class="category-tag">${book.category}</div>
+                                    <div class="book-title">${book.title}</div>
+                                </div>
+                                <button class="btn-minimize" onclick="toggleMin(${book.id})">${isMin ? '+' : '−'}</button>
+                            </div>
+                            <div class="book-rating">
+                                <span class="star">★</span> ${book.rating} / 5.00
+                            </div>
+                            <div class="book-synopsis">${book.synopsis}</div>
+                            <div class="book-actions">
+                                <button class="btn-read" onclick="toggleRead(${book.id})">
+                                    ${isRead ? '✓ Read' : 'Mark as Read'}
+                                </button>
+                                <button class="btn-hide" onclick="hideBook(${book.id})">Hide</button>
+                            </div>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                }
+            });
+        }
+
+        window.toggleRead = function(id) {
+            readStatus[id] = !readStatus[id];
+            saveState();
+            renderBooks();
         };
 
-        try {
-            const books = [
-                { id: 1, title: "Rise of the Horde", category: "The Foundations", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. This novel details their tragic fall into bloodlust and demonic corruption orchestrated by the Burning Legion." },
-                { id: 2, title: "The Last Guardian", category: "The Foundations", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence within himself. His apprentice, Khadgar, must uncover his master's secrets as the Orcish Horde first pours into Azeroth." },
-                { id: 3, title: "Tides of Darkness", category: "The Foundations", rating: "4.15", synopsis: "Following the fall of Stormwind, the survivors flee to Lordaeron to forge a grand Alliance, desperately fighting to halt the Orcish Horde's relentless march across the continent." },
-                { id: 4, title: "The Well of Eternity", category: "Time Travel & Third War", rating: "4.20", synopsis: "Modern heroes are cast 10,000 years into the past, arriving at the height of the Night Elf empire just as the Burning Legion begins its catastrophic first invasion of Azeroth." },
-                { id: 5, title: "Lord of the Clans", category: "Time Travel & Third War", rating: "4.26", synopsis: "Raised as a gladiator slave by a human master, the young orc Thrall escapes to discover his heritage, master shamanism, and unite the scattered orc clans into a new Horde." },
-                { id: 6, title: "Arthas: Rise of the Lich King", category: "Time Travel & Third War", rating: "4.35", synopsis: "Prince Arthas Menethil makes terrible sacrifices in an attempt to save his people from the undead plague, a tragic path that ultimately leads him to the Frozen Throne." },
-                { id: 7, title: "The Shattering: Prelude to Cataclysm", category: "The MMO Era", rating: "4.05", synopsis: "Azeroth is rocked by elemental unrest. As Thrall steps down as Warchief to heal the world, Garrosh Hellscream takes command, heightening tensions between the Horde and Alliance." },
-                { id: 8, title: "Sylvanas", category: "The MMO Era", rating: "4.32", synopsis: "An intimate look into the long, complex life and afterlife of the Banshee Queen, revealing the true motivations behind her most controversial actions leading into the Shadowlands." }
-            ];
-
-            let readStatus = {};
-            let hiddenStatus = {};
-            let storageWorking = false;
-
-            // Safely attempt to load storage
-            try {
-                if (typeof localStorage !== 'undefined') {
-                    const savedRead = localStorage.getItem('wowBooksRead');
-                    const savedHidden = localStorage.getItem('wowBooksHidden');
-                    if (savedRead) readStatus = JSON.parse(savedRead);
-                    if (savedHidden) hiddenStatus = JSON.parse(savedHidden);
-                    storageWorking = true;
-                }
-            } catch (e) {
-                container.innerHTML += `<div class="error-box"><b>Notice:</b> Your browser privacy settings are blocking storage. Progress won't be saved after closing the tab.</div>`;
-            }
-
-            // Safely attempt to save storage
-            function saveState() {
-                if (!storageWorking) return;
-                try {
-                    localStorage.setItem('wowBooksRead', JSON.stringify(readStatus));
-                    localStorage.setItem('wowBooksHidden', JSON.stringify(hiddenStatus));
-                } catch (e) {
-                    console.warn("Storage write blocked.");
-                }
-            }
-
-            const searchInput = document.getElementById('searchInput');
-
-            function renderBooks() {
-                container.innerHTML = ''; 
-                const searchTerm = searchInput.value.toLowerCase();
-
-                books.forEach(book => {
-                    if (hiddenStatus[book.id]) return;
-
-                    if (book.title.toLowerCase().includes(searchTerm) || 
-                        book.category.toLowerCase().includes(searchTerm)) {
-                        
-                        const isRead = readStatus[book.id] ? true : false;
-                        
-                        const card = document.createElement('div');
-                        card.className = `book-card ${isRead ? 'read' : ''}`;
-                        
-                        // Using pure CSS covers instead of external images to prevent loading blocks
-                        card.innerHTML = `
-                            <div class="book-cover">${book.title}</div>
-                            <div class="book-info">
-                                <div class="category-tag">${book.category}</div>
-                                <div class="book-title">${book.title}</div>
-                                <div class="book-rating">
-                                    <span class="star">★</span> ${book.rating} / 5.00
-                                </div>
-                                <div class="book-synopsis">${book.synopsis}</div>
-                                <div class="book-actions">
-                                    <button class="btn-read" onclick="toggleRead(${book.id})">
-                                        ${isRead ? '✓ Read' : 'Mark as Read'}
-                                    </button>
-                                    <button class="btn-hide" onclick="hideBook(${book.id})">Hide</button>
-                                </div>
-                            </div>
-                        `;
-                        container.appendChild(card);
-                    }
-                });
-            }
-
-            // Global functions so the HTML buttons can call them
-            window.toggleRead = function(id) {
-                readStatus[id] = !readStatus[id];
-                saveState();
-                renderBooks();
-            };
-
-            window.hideBook = function(id) {
-                hiddenStatus[id] = true;
-                saveState();
-                renderBooks();
-            };
-
-            window.resetHidden = function() {
-                hiddenStatus = {};
-                saveState();
-                renderBooks();
-            };
-
-            searchInput.addEventListener('input', renderBooks);
-            
-            // Initial render
+        window.hideBook = function(id) {
+            hiddenStatus[id] = true;
+            saveState();
             renderBooks();
+        };
 
-        } catch (fatalError) {
-            container.innerHTML += `<div class="error-box"><b>Fatal Script Error:</b> ${fatalError.message}</div>`;
-        }
+        window.toggleMin = function(id) {
+            minStatus[id] = !minStatus[id];
+            saveState();
+            renderBooks();
+        };
+
+        window.toggleAllMinimize = function() {
+            allMinimized = !allMinimized;
+            books.forEach(book => { minStatus[book.id] = allMinimized; });
+            saveState();
+            renderBooks();
+        };
+
+        window.resetHidden = function() {
+            hiddenStatus = {};
+            saveState();
+            renderBooks();
+        };
+
+        searchInput.addEventListener('input', renderBooks);
+        renderBooks();
     </script>
 </body>
 </html>
