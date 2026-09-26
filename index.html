@@ -11,14 +11,13 @@
             --bg-color: #0b0c10;
             --card-bg: #15161c;
             --text-main: #e4d8c5;
-            --text-muted: #8e8c89;
+            --text-muted: #a3a19e;
             --gold-accent: #f8b700;
             --gold-muted: #c69b6d;
             --gold-border: #4a3a25;
-            --read-bg: #0d1a13;
+            --read-bg: rgba(13, 26, 19, 0.85);
             --read-border: #224d31;
             --danger: #7a1d1d;
-            --horde-red: #4a0000;
             --ui-font: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
         }
 
@@ -84,7 +83,7 @@
         input[type="text"] {
             width: 100%;
             padding: 12px;
-            background-color: var(--card-bg);
+            background-color: rgba(21, 22, 28, 0.8);
             border: 1px solid var(--gold-border);
             border-radius: 4px;
             color: var(--text-main);
@@ -121,7 +120,6 @@
         .book-card {
             display: flex;
             background-color: var(--card-bg);
-            background-image: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 100%);
             border: 1px solid var(--gold-border);
             border-radius: 6px;
             overflow: hidden;
@@ -131,7 +129,6 @@
             transition: box-shadow 0.2s ease;
         }
 
-        /* Styles active only while physically dragging */
         .book-card.dragging {
             opacity: 0.95;
             box-shadow: 0 15px 25px rgba(0,0,0,0.9);
@@ -145,8 +142,27 @@
         }
 
         .book-card.read {
-            background-color: var(--read-bg);
             border-color: var(--read-border);
+        }
+
+        /* Blurred Background Overlay */
+        .bg-blur {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover;
+            background-position: center;
+            filter: blur(25px) brightness(0.25);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .book-card.read .bg-blur {
+            filter: blur(25px) brightness(0.15) sepia(0.5) hue-rotate(90deg);
+        }
+
+        .book-cover, .book-info {
+            position: relative;
+            z-index: 1;
         }
 
         .book-cover {
@@ -155,8 +171,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-right: 1px solid var(--gold-border);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
 
         .book-cover img {
@@ -165,38 +180,75 @@
             object-fit: cover;
         }
 
-        /* Minimized State: Large Cover + Title */
+        /* --- MINIMIZED STATE (List View) --- */
         .book-card.minimized .book-cover {
             width: 130px;
             height: 195px;
         }
-
         .book-card.minimized .book-synopsis,
         .book-card.minimized .book-actions,
-        .book-card.minimized .book-rating {
+        .book-card.minimized .book-rating,
+        .book-card.minimized .book-metadata {
             display: none;
         }
-
         .book-card.minimized .book-title {
-            font-size: 1.5rem; /* Larger font */
-            color: #fce883; /* WoW Cover Art Gold */
-            text-shadow: 0 2px 4px rgba(0,0,0,0.9);
-            margin-top: 8px;
+            font-size: 1.55rem;
             line-height: 1.1;
+            margin-top: 8px;
         }
 
-        /* Expanded State: Smaller Cover + Full Details */
+        /* --- UNMINIMIZED STATE (Full Screen Modal) --- */
+        .book-card:not(.minimized) {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            width: 100vw; height: 100vh;
+            z-index: 9999;
+            flex-direction: column;
+            border-radius: 0;
+            margin: 0;
+            overflow-y: auto;
+            border: none;
+            background-color: #0b0c10;
+        }
+        .book-card:not(.minimized) .bg-blur {
+            position: fixed; /* Lock background during scroll */
+            filter: blur(40px) brightness(0.2);
+        }
         .book-card:not(.minimized) .book-cover {
-            width: 90px;
-            height: 140px;
+            width: 100%;
+            height: 45vh;
+            border-right: none;
+            border-bottom: 2px solid var(--gold-border);
+            flex-shrink: 0;
+        }
+        .book-card:not(.minimized) .book-cover img {
+            object-fit: contain; /* Don't crop the art in full screen */
+            padding: 16px;
+            background: rgba(0,0,0,0.6);
+        }
+        .book-card:not(.minimized) .drag-handle {
+            display: none;
+        }
+        .book-card:not(.minimized) .card-indicator {
+            font-size: 2rem; /* Make the 'X' easy to tap */
+            color: #fff;
+        }
+        .book-card:not(.minimized) .book-title {
+            font-size: 1.8rem;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+        .book-card:not(.minimized) .book-actions {
+            margin-top: 24px;
+            margin-bottom: 32px;
+            padding-bottom: 24px;
         }
 
         .book-info {
-            padding: 12px;
+            padding: 16px;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
-            position: relative;
         }
 
         .card-header {
@@ -218,21 +270,17 @@
             opacity: 0.6;
             touch-action: none;
         }
+        .drag-handle:active { cursor: grabbing; }
 
-        .drag-handle:active {
-            cursor: grabbing;
-        }
-
-        .header-text {
-            flex-grow: 1;
-        }
+        .header-text { flex-grow: 1; }
 
         .category-tag {
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: var(--gold-muted);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
             margin-bottom: 4px;
+            font-weight: bold;
         }
 
         .card-indicator {
@@ -246,47 +294,59 @@
 
         .book-title {
             font-family: var(--ui-font);
-            font-size: 1.15rem;
             font-weight: bold;
-            color: var(--gold-accent);
-            margin-bottom: 4px;
-            line-height: 1.2;
-            transition: all 0.3s ease;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.9);
+            transition: all 0.2s ease;
+        }
+
+        .book-metadata {
+            font-size: 0.9rem;
+            color: #bbb;
+            margin-bottom: 16px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 16px;
+        }
+        .book-metadata span {
+            color: #fff;
+            font-weight: bold;
         }
 
         .book-rating {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             color: var(--text-muted);
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
-
         .star { color: var(--gold-accent); }
 
         .book-synopsis {
-            font-size: 0.85rem;
-            color: #c4c4c4;
+            font-size: 1rem;
+            color: #d1d1d1;
             margin-bottom: 16px;
             flex-grow: 1;
-            line-height: 1.4;
+            line-height: 1.6;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
         }
 
         .book-actions {
             display: flex;
-            gap: 8px;
+            gap: 12px;
             margin-top: auto;
         }
 
         button.action-btn {
             flex: 1;
-            padding: 10px;
+            padding: 14px;
             border: 1px solid transparent;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: bold;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             font-family: var(--ui-font);
             text-transform: uppercase;
             cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
         }
 
         .btn-read { 
@@ -294,7 +354,6 @@
             color: #2a1f12; 
             border-color: #f8b700;
         }
-        
         .book-card.read .btn-read { 
             background: linear-gradient(to bottom, #2b6140, #1c452b); 
             color: #a3d9b8; 
@@ -327,34 +386,46 @@
     <main class="book-list" id="bookContainer"></main>
 
     <script>
+        // Specific font colors extracted to match official book cover text
+        const colorSilver = "#c0c5ce";
+        const colorGold = "#f0c265";
+        const colorIce = "#84cce3";
+        const colorFel = "#73e041";
+        const colorFire = "#d65a31";
+
         let books = [
-            { id: 1, title: "Rise of the Horde", category: "The Foundations", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. Details their tragic fall into bloodlust orchestrated by the Burning Legion.", cover: "Images/rise-of-the-horde.jpg" },
-            { id: 2, title: "The Last Guardian", category: "The Foundations", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence. His apprentice, Khadgar, must uncover his secrets as the Horde pours into Azeroth.", cover: "Images/the-last-guardian.jpg" },
-            { id: 3, title: "Tides of Darkness", category: "The Foundations", rating: "4.15", synopsis: "Following the fall of Stormwind, survivors flee to Lordaeron to forge a grand Alliance and halt the Orcish Horde's march.", cover: "Images/tides-of-darkness.jpg" },
-            { id: 4, title: "Beyond the Dark Portal", category: "The Foundations", rating: "4.13", synopsis: "The Alliance expedition pushes through the portal into Draenor to stop the orcish threat at its source.", cover: "Images/beyond-the-dark-portal.jpg" },
-            { id: 5, title: "Day of the Dragon", category: "The Foundations", rating: "4.05", synopsis: "Set after the Second War, focusing on the mage Rhonin and the liberation of the Dragonqueen Alexstrasza from the Dragonmaw Clan.", cover: "Images/day-of-the-dragon.jpg" },
-            { id: 6, title: "The Well of Eternity", category: "Time Travel & 3rd War", rating: "4.20", synopsis: "Modern heroes are cast 10,000 years into the past during the Burning Legion's first invasion of Azeroth.", cover: "Images/the-well-of-eternity.jpg" },
-            { id: 7, title: "The Demon Soul", category: "Time Travel & 3rd War", rating: "4.22", synopsis: "Part two of the War of the Ancients. Deathwing's betrayal is revealed as the defenders of Azeroth struggle to survive.", cover: "Images/the-demon-soul.jpg" },
-            { id: 8, title: "The Sundering", category: "Time Travel & 3rd War", rating: "4.26", synopsis: "The conclusion to the War of the Ancients. The Well of Eternity collapses, reshaping the continents of Azeroth forever.", cover: "Images/the-sundering.jpg" },
-            { id: 9, title: "Lord of the Clans", category: "Time Travel & 3rd War", rating: "4.26", synopsis: "Raised as a gladiator slave, the young orc Thrall escapes to master shamanism and unite the scattered orc clans into a new Horde.", cover: "Images/lord-of-the-clans.jpg" },
-            { id: 10, title: "Of Blood and Honor", category: "Time Travel & 3rd War", rating: "4.03", synopsis: "The paladin Tirion Fordring risks everything when he makes a fateful connection with the honorable orc Eitrigg.", cover: "Images/of-blood-and-honor.jpg" },
-            { id: 11, title: "Arthas: Rise of the Lich King", category: "Time Travel & 3rd War", rating: "4.35", synopsis: "Prince Arthas Menethil makes terrible sacrifices to save his people, a tragic path that leads him to the Frozen Throne.", cover: "Images/arthas-rise-of-the-lich-king.jpg" },
-            { id: 12, title: "Illidan", category: "Time Travel & 3rd War", rating: "4.24", synopsis: "Follows Illidan Stormrage from his release in Warcraft III through his rule over Outland.", cover: "Images/illidan.jpg" },
-            { id: 13, title: "Cycle of Hatred", category: "The MMO Era", rating: "3.55", synopsis: "Set shortly before Vanilla WoW, exploring the fragile peace between the Horde and Alliance in Kalimdor.", cover: "Images/cycle-of-hatred.jpg" },
-            { id: 14, title: "Night of the Dragon", category: "The MMO Era", rating: "3.95", synopsis: "A sequel to Day of the Dragon, returning to Grim Batol to face the sinister Twilight Dragonflight.", cover: "Images/night-of-the-dragon.jpg" },
-            { id: 15, title: "Stormrage", category: "The MMO Era", rating: "3.90", synopsis: "Malfurion Stormrage is trapped in the Emerald Nightmare, and his allies must fight to awaken him before the corruption spreads.", cover: "Images/stormrage.jpg" },
-            { id: 16, title: "The Shattering", category: "The MMO Era", rating: "4.05", synopsis: "As Thrall steps down to heal the world, Garrosh Hellscream takes command, heightening faction tensions.", cover: "Images/the-shattering.jpg" },
-            { id: 17, title: "Wolfheart", category: "The MMO Era", rating: "3.90", synopsis: "King Varian Wrynn struggles to accept the Worgen into the Alliance while Garrosh presses his assault on Ashenvale.", cover: "Images/wolfheart.jpg" },
-            { id: 18, title: "Thrall: Twilight of the Aspects", category: "The MMO Era", rating: "4.08", synopsis: "Thrall journeys across time and space to aid the Dragon Aspects in their fight against the Twilight's Hammer.", cover: "Images/thrall-twilight-of-the-aspects.jpg" },
-            { id: 19, title: "Jaina Proudmoore: Tides of War", category: "The MMO Era", rating: "4.21", synopsis: "The tragic destruction of Theramore pushes Jaina Proudmoore to the brink, altering her path forever.", cover: "Images/jaina-proudmoore-tides-of-war.jpg" },
-            { id: 20, title: "Dawn of the Aspects", category: "The MMO Era", rating: "4.07", synopsis: "Kalecgos experiences visions of the ancient proto-dragons and their original battle against Galakrond.", cover: "Images/dawn-of-the-aspects.jpg" },
-            { id: 21, title: "Vol'jin: Shadows of the Horde", category: "The MMO Era", rating: "4.22", synopsis: "Recovering from an assassination attempt in Pandaria, Vol'jin must defend a monastery against the Zandalari.", cover: "Images/voljin-shadows-of-the-horde.jpg" },
-            { id: 22, title: "War Crimes", category: "The MMO Era", rating: "4.15", synopsis: "Garrosh Hellscream stands trial in Pandaria, forcing leaders from both factions to confront their own pasts.", cover: "Images/war-crimes.jpg" },
-            { id: 23, title: "Before the Storm", category: "The MMO Era", rating: "3.95", synopsis: "Anduin Wrynn and Sylvanas Windrunner attempt to navigate a tenuous peace after the defeat of the Burning Legion.", cover: "Images/before-the-storm.jpg" },
-            { id: 24, title: "Shadows Rising", category: "The MMO Era", rating: "3.85", synopsis: "The Horde and Alliance hunt for Sylvanas and Nathanos in the aftermath of the Fourth War.", cover: "Images/shadows-rising.jpg" },
-            { id: 25, title: "Sylvanas", category: "The MMO Era", rating: "4.32", synopsis: "An intimate look into the long afterlife of the Banshee Queen and her motivations leading into the Shadowlands.", cover: "Images/sylvanas.jpg" },
-            { id: 26, title: "War of the Scaleborn", category: "The MMO Era", rating: "4.10", synopsis: "An ancient history of the conflict between the empowered Dragon Aspects and the elemental Primalists.", cover: "Images/war-of-the-scaleborn.jpg" },
-            { id: 27, title: "Blood Ties", category: "The MMO Era", rating: "TBD", synopsis: "Sets the stage for the Midnight expansion as the void forces prepare to strike at the heart of Azeroth.", cover: "Images/blood-ties.jpg" }
+            // The Foundations
+            { id: 1, title: "Rise of the Horde", titleColor: colorSilver, category: "The Foundations", author: "Christie Golden", date: "Dec 2006", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. Details their tragic fall into bloodlust orchestrated by the Burning Legion.", cover: "Images/rise-of-the-horde.jpg" },
+            { id: 2, title: "The Last Guardian", titleColor: colorSilver, category: "The Foundations", author: "Jeff Grubb", date: "Dec 2001", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence. His apprentice, Khadgar, must uncover his secrets as the Horde pours into Azeroth.", cover: "Images/the-last-guardian.jpg" },
+            { id: 3, title: "Tides of Darkness", titleColor: colorGold, category: "The Foundations", author: "Aaron Rosenberg", date: "Aug 2007", rating: "4.15", synopsis: "Following the fall of Stormwind, survivors flee to Lordaeron to forge a grand Alliance and halt the Orcish Horde's march.", cover: "Images/tides-of-darkness.jpg" },
+            { id: 4, title: "Beyond the Dark Portal", titleColor: colorGold, category: "The Foundations", author: "Aaron Rosenberg & Christie Golden", date: "Apr 2008", rating: "4.13", synopsis: "The Alliance expedition pushes through the portal into Draenor to stop the orcish threat at its source.", cover: "Images/beyond-the-dark-portal.jpg" },
+            { id: 5, title: "Day of the Dragon", titleColor: colorGold, category: "The Foundations", author: "Richard A. Knaak", date: "Feb 2001", rating: "4.05", synopsis: "Set after the Second War, focusing on the mage Rhonin and the liberation of the Dragonqueen Alexstrasza from the Dragonmaw Clan.", cover: "Images/day-of-the-dragon.jpg" },
+            
+            // Time Travel & Third War
+            { id: 6, title: "The Well of Eternity", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Mar 2004", rating: "4.20", synopsis: "Modern heroes are cast 10,000 years into the past during the Burning Legion's first invasion of Azeroth.", cover: "Images/the-well-of-eternity.jpg" },
+            { id: 7, title: "The Demon Soul", titleColor: colorFire, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Oct 2004", rating: "4.22", synopsis: "Part two of the War of the Ancients. Deathwing's betrayal is revealed as the defenders of Azeroth struggle to survive.", cover: "Images/the-demon-soul.jpg" },
+            { id: 8, title: "The Sundering", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Jul 2005", rating: "4.26", synopsis: "The conclusion to the War of the Ancients. The Well of Eternity collapses, reshaping the continents of Azeroth forever.", cover: "Images/the-sundering.jpg" },
+            { id: 9, title: "Lord of the Clans", titleColor: colorGold, category: "Time Travel & 3rd War", author: "Christie Golden", date: "Oct 2001", rating: "4.26", synopsis: "Raised as a gladiator slave, the young orc Thrall escapes to master shamanism and unite the scattered orc clans into a new Horde.", cover: "Images/lord-of-the-clans.jpg" },
+            { id: 10, title: "Of Blood and Honor", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Chris Metzen", date: "Jan 2001", rating: "4.03", synopsis: "The paladin Tirion Fordring risks everything when he makes a fateful connection with the honorable orc Eitrigg.", cover: "Images/of-blood-and-honor.jpg" },
+            { id: 11, title: "Arthas: Rise of the Lich King", titleColor: colorIce, category: "Time Travel & 3rd War", author: "Christie Golden", date: "Apr 2009", rating: "4.35", synopsis: "Prince Arthas Menethil makes terrible sacrifices to save his people, a tragic path that leads him to the Frozen Throne.", cover: "Images/arthas-rise-of-the-lich-king.jpg" },
+            { id: 12, title: "Illidan", titleColor: colorFel, category: "Time Travel & 3rd War", author: "William King", date: "Apr 2016", rating: "4.24", synopsis: "Follows Illidan Stormrage from his release in Warcraft III through his rule over Outland.", cover: "Images/illidan.jpg" },
+            
+            // The MMO Era
+            { id: 13, title: "Cycle of Hatred", titleColor: colorSilver, category: "The MMO Era", author: "Keith R.A. DeCandido", date: "Jan 2006", rating: "3.55", synopsis: "Set shortly before Vanilla WoW, exploring the fragile peace between the Horde and Alliance in Kalimdor.", cover: "Images/cycle-of-hatred.jpg" },
+            { id: 14, title: "Night of the Dragon", titleColor: colorSilver, category: "The MMO Era", author: "Richard A. Knaak", date: "Nov 2008", rating: "3.95", synopsis: "A sequel to Day of the Dragon, returning to Grim Batol to face the sinister Twilight Dragonflight.", cover: "Images/night-of-the-dragon.jpg" },
+            { id: 15, title: "Stormrage", titleColor: "#87c773", category: "The MMO Era", author: "Richard A. Knaak", date: "Feb 2010", rating: "3.90", synopsis: "Malfurion Stormrage is trapped in the Emerald Nightmare, and his allies must fight to awaken him before the corruption spreads.", cover: "Images/stormrage.jpg" },
+            { id: 16, title: "The Shattering", titleColor: colorFire, category: "The MMO Era", author: "Christie Golden", date: "Oct 2010", rating: "4.05", synopsis: "As Thrall steps down to heal the world, Garrosh Hellscream takes command, heightening faction tensions.", cover: "Images/the-shattering.jpg" },
+            { id: 17, title: "Wolfheart", titleColor: colorSilver, category: "The MMO Era", author: "Richard A. Knaak", date: "Sep 2011", rating: "3.90", synopsis: "King Varian Wrynn struggles to accept the Worgen into the Alliance while Garrosh presses his assault on Ashenvale.", cover: "Images/wolfheart.jpg" },
+            { id: 18, title: "Thrall: Twilight of the Aspects", titleColor: colorGold, category: "The MMO Era", author: "Christie Golden", date: "Jul 2011", rating: "4.08", synopsis: "Thrall journeys across time and space to aid the Dragon Aspects in their fight against the Twilight's Hammer.", cover: "Images/thrall-twilight-of-the-aspects.jpg" },
+            { id: 19, title: "Jaina Proudmoore: Tides of War", titleColor: colorIce, category: "The MMO Era", author: "Christie Golden", date: "Aug 2012", rating: "4.21", synopsis: "The tragic destruction of Theramore pushes Jaina Proudmoore to the brink, altering her path forever.", cover: "Images/jaina-proudmoore-tides-of-war.jpg" },
+            { id: 20, title: "Dawn of the Aspects", titleColor: colorGold, category: "The MMO Era", author: "Richard A. Knaak", date: "Nov 2013", rating: "4.07", synopsis: "Kalecgos experiences visions of the ancient proto-dragons and their original battle against Galakrond.", cover: "Images/dawn-of-the-aspects.jpg" },
+            { id: 21, title: "Vol'jin: Shadows of the Horde", titleColor: "#5cb8b2", category: "The MMO Era", author: "Michael A. Stackpole", date: "Jul 2013", rating: "4.22", synopsis: "Recovering from an assassination attempt in Pandaria, Vol'jin must defend a monastery against the Zandalari.", cover: "Images/voljin-shadows-of-the-horde.jpg" },
+            { id: 22, title: "War Crimes", titleColor: colorGold, category: "The MMO Era", author: "Christie Golden", date: "May 2014", rating: "4.15", synopsis: "Garrosh Hellscream stands trial in Pandaria, forcing leaders from both factions to confront their own pasts.", cover: "Images/war-crimes.jpg" },
+            { id: 23, title: "Before the Storm", titleColor: colorGold, category: "The MMO Era", author: "Christie Golden", date: "Jun 2018", rating: "3.95", synopsis: "Anduin Wrynn and Sylvanas Windrunner attempt to navigate a tenuous peace after the defeat of the Burning Legion.", cover: "Images/before-the-storm.jpg" },
+            { id: 24, title: "Shadows Rising", titleColor: "#b08dce", category: "The MMO Era", author: "Madeleine Roux", date: "Jul 2020", rating: "3.85", synopsis: "The Horde and Alliance hunt for Sylvanas and Nathanos in the aftermath of the Fourth War.", cover: "Images/shadows-rising.jpg" },
+            { id: 25, title: "Sylvanas", titleColor: "#8e9cb3", category: "The MMO Era", author: "Christie Golden", date: "Mar 2022", rating: "4.32", synopsis: "An intimate look into the long afterlife of the Banshee Queen and her motivations leading into the Shadowlands.", cover: "Images/sylvanas.jpg" },
+            { id: 26, title: "War of the Scaleborn", titleColor: colorGold, category: "The MMO Era", author: "Courtney Alameda", date: "Oct 2023", rating: "4.10", synopsis: "An ancient history of the conflict between the empowered Dragon Aspects and the elemental Primalists.", cover: "Images/war-of-the-scaleborn.jpg" },
+            { id: 27, title: "Blood Ties", titleColor: "#9b59b6", category: "The MMO Era", author: "TBD", date: "TBA", rating: "TBD", synopsis: "Sets the stage for the Midnight expansion as the void forces prepare to strike at the heart of Azeroth.", cover: "Images/blood-ties.jpg" }
         ];
 
         let readStatus = JSON.parse(localStorage.getItem('wowBooksRead')) || {};
@@ -387,6 +458,10 @@
             localStorage.setItem('wowBooksRead', JSON.stringify(readStatus));
             localStorage.setItem('wowBooksHidden', JSON.stringify(hiddenStatus));
             localStorage.setItem('wowBooksMin', JSON.stringify(minStatus));
+            
+            // Check if any book is currently unminimized (full screen) and lock background scroll
+            const isAnyExpanded = Object.values(minStatus).includes(false);
+            document.body.style.overflow = isAnyExpanded ? 'hidden' : '';
         }
 
         function renderBooks() {
@@ -408,6 +483,7 @@
                     card.onclick = (e) => handleCardClick(e, book.id);
                     
                     card.innerHTML = `
+                        <div class="bg-blur" style="background-image: url('${book.cover}')"></div>
                         <div class="book-cover">
                             <img src="${book.cover}" alt="${book.title} Cover" onerror="this.onerror=null; this.src='https://placehold.co/130x195/15161c/c69b6d?text=No+Cover';">
                         </div>
@@ -416,14 +492,22 @@
                                 <div class="drag-handle" onclick="event.stopPropagation()">☰</div>
                                 <div class="header-text">
                                     <div class="category-tag">${book.category}</div>
-                                    <div class="book-title">${book.title}</div>
+                                    <div class="book-title" style="color: ${book.titleColor}">${book.title}</div>
                                 </div>
-                                <div class="card-indicator">${isMin ? '+' : '−'}</div>
+                                <div class="card-indicator">${isMin ? '+' : '✕'}</div>
                             </div>
+                            
+                            <div class="book-metadata">
+                                <div>Author: <br><span>${book.author}</span></div>
+                                <div>Published: <br><span>${book.date}</span></div>
+                            </div>
+                            
                             <div class="book-rating">
                                 <span class="star">★</span> ${book.rating} / 5.00
                             </div>
+                            
                             <div class="book-synopsis">${book.synopsis}</div>
+                            
                             <div class="book-actions">
                                 <button class="action-btn btn-read" onclick="event.stopPropagation(); toggleRead(${book.id})">
                                     ${isRead ? '✓ Read' : 'Mark as Read'}
@@ -435,6 +519,7 @@
                     container.appendChild(card);
                 }
             });
+            saveState(); // Ensure body scroll lock applies on search refresh
         }
 
         window.handleCardClick = function(event, id) {
@@ -460,6 +545,14 @@
             minStatus[id] = !minStatus[id];
             saveState();
             renderBooks();
+            
+            // If opening a book, automatically scroll to top of that view
+            if (!minStatus[id]) {
+                setTimeout(() => {
+                    const expandedCard = document.querySelector(`.book-card[data-id="${id}"]`);
+                    if (expandedCard) expandedCard.scrollTop = 0;
+                }, 10);
+            }
         };
 
         window.toggleAllMinimize = function() {
@@ -485,20 +578,17 @@
                 draggedItem = e.target.closest('.book-card');
                 const rect = draggedItem.getBoundingClientRect();
                 
-                // Create a temporary placeholder to keep the list layout stable
                 placeholder = document.createElement('div');
                 placeholder.className = 'book-card placeholder';
                 placeholder.style.height = rect.height + 'px';
                 
-                // Insert placeholder
                 draggedItem.parentNode.insertBefore(placeholder, draggedItem);
                 
-                // Float the dragged item to follow the finger
                 draggedItem.style.position = 'fixed';
                 draggedItem.style.top = rect.top + 'px';
                 draggedItem.style.left = rect.left + 'px';
                 draggedItem.style.width = rect.width + 'px';
-                draggedItem.style.pointerEvents = 'none'; // Ensure finger targets elements behind the card
+                draggedItem.style.pointerEvents = 'none';
                 draggedItem.classList.add('dragging');
                 
                 startY = e.touches[0].clientY;
@@ -528,10 +618,8 @@
         container.addEventListener('touchend', (e) => {
             if (!draggedItem) return;
             
-            // Drop item into placeholder location
             container.insertBefore(draggedItem, placeholder);
             
-            // Cleanup
             placeholder.remove();
             placeholder = null;
             
@@ -543,9 +631,10 @@
             draggedItem.style.pointerEvents = '';
             draggedItem.classList.remove('dragging');
             draggedItem = null;
-            document.body.style.overflow = '';
             
-            // Save newly swapped order
+            const isAnyExpanded = Object.values(minStatus).includes(false);
+            document.body.style.overflow = isAnyExpanded ? 'hidden' : '';
+            
             const currentCards = Array.from(container.querySelectorAll('.book-card:not(.placeholder)'));
             const newOrder = currentCards.map(card => parseInt(card.dataset.id));
             localStorage.setItem('wowBooksOrder', JSON.stringify(newOrder));
