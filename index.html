@@ -131,21 +131,20 @@
             position: relative;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
-            transition: transform 0.2s ease;
         }
 
-        .book-card.dragging {
+        /* Ghost element styling (the one attached to your finger) */
+        .book-card.ghost {
+            position: fixed;
+            z-index: 9999;
             opacity: 0.95;
-            box-shadow: 0 20px 30px rgba(0,0,0,0.9);
-            z-index: 1000;
-            transition: none; /* Disable transition while following finger */
+            box-shadow: 0 25px 35px rgba(0,0,0,0.9);
+            pointer-events: none; /* Let touch events pass through to elements below */
         }
 
+        /* Placeholder styling (the invisible gap in the list) */
         .book-card.placeholder {
-            border: 2px dashed var(--gold-muted);
-            background-color: rgba(198, 155, 109, 0.05);
-            box-shadow: none;
-            visibility: visible;
+            opacity: 0 !important; 
         }
 
         .book-card.read {
@@ -203,7 +202,7 @@
             margin-top: 8px;
         }
 
-        /* UNMINIMIZED STATE (Full Screen) */
+        /* UNMINIMIZED STATE */
         .book-card:not(.minimized) {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -556,77 +555,107 @@
             renderBooks();
         };
 
-        // Simplified, robust DOM-based drag and drop for mobile
+        // Complete FLIP-based Touch Drag and Drop
         let draggedItem = null;
-        let placeholder = null;
+        let ghostItem = null;
+        let startY = 0;
         let touchOffsetY = 0;
 
         container.addEventListener('touchstart', (e) => {
-            if (e.target.classList.contains('drag-handle')) {
-                draggedItem = e.target.closest('.book-card');
-                const rect = draggedItem.getBoundingClientRect();
-                
-                touchOffsetY = e.touches[0].clientY - rect.top;
-                
-                placeholder = document.createElement('div');
-                placeholder.className = 'book-card placeholder';
-                placeholder.style.height = rect.height + 'px';
-                
-                container.insertBefore(placeholder, draggedItem);
-                
-                draggedItem.style.position = 'fixed';
-                draggedItem.style.top = (e.touches[0].clientY - touchOffsetY) + 'px';
-                draggedItem.style.left = rect.left + 'px';
-                draggedItem.style.width = rect.width + 'px';
-                draggedItem.style.margin = '0';
-                draggedItem.classList.add('dragging');
-            }
+            const handle = e.target.closest('.drag-handle');
+            if (!handle) return;
+            
+            draggedItem = handle.closest('.book-card');
+            const rect = draggedItem.getBoundingClientRect();
+            
+            // 1. Create the floating ghost that follows the finger
+            ghostItem = draggedItem.cloneNode(true);
+            ghostItem.classList.add('ghost');
+            ghostItem.style.top = rect.top + 'px';
+            ghostItem.style.left = rect.left + 'px';
+            ghostItem.style.width = rect.width + 'px';
+            document.body.appendChild(ghostItem);
+
+            // 2. The original item stays in the DOM but becomes an invisible placeholder
+            draggedItem.classList.add('placeholder');
+            
+            startY = e.touches[0].clientY;
+            touchOffsetY = startY - rect.top;
+            
+            document.body.style.overflow = 'hidden';
         }, {passive: false});
 
         container.addEventListener('touchmove', (e) => {
-            if (!draggedItem) return;
+            if (!ghostItem) return;
             e.preventDefault(); 
             
             const touchY = e.touches[0].clientY;
-            draggedItem.style.top = (touchY - touchOffsetY) + 'px';
+            ghostItem.style.top = (touchY - touchOffsetY) + 'px';
             
-            const cards = Array.from(container.querySelectorAll('.book-card:not(.dragging):not(.placeholder)'));
-            let nextSibling = null;
+            // Briefly hide the ghost so we can detect what card is underneath the finger
+            ghostItem.style.display = 'none';
+            const elementUnderFinger = document.elementFromPoint(e.touches[0].clientX, touchY);
+            ghostItem.style.display = '';
             
-            for (let card of cards) {
-                const box = card.getBoundingClientRect();
-                const boxCenter = box.top + box.height / 2;
-                if (touchY < boxCenter) {
-                    nextSibling = card;
-                    break;
-                }
-            }
+            if (!elementUnderFinger) return;
             
-            if (placeholder.nextSibling !== nextSibling) {
-                if (nextSibling) {
-                    container.insertBefore(placeholder, nextSibling);
+            const targetCard = elementUnderFinger.closest('.book-card:not(.ghost)');
+            
+            // If dragging over a new card that isn't the placeholder
+            if (targetCard && targetCard !== draggedItem) {
+                
+                // FLIP Step 1: Record initial positions of all cards
+                const staticCards = Array.from(container.querySelectorAll('.book-card:not(.ghost)'));
+                const oldRects = new Map();
+                staticCards.forEach(c => oldRects.set(c, c.getBoundingClientRect()));
+                
+                // Move the invisible placeholder in the DOM
+                const targetRect = targetCard.getBoundingClientRect();
+                const targetCenter = targetRect.top + targetRect.height / 2;
+                
+                if (touchY > targetCenter) {
+                    container.insertBefore(draggedItem, targetCard.nextSibling);
                 } else {
-                    container.appendChild(placeholder);
+                    container.insertBefore(draggedItem, targetCard);
                 }
+                
+                // FLIP Step 2: Animate cards smoothly to their new positions
+                staticCards.forEach(c => {
+                    if (c === draggedItem) return; // Don't animate the invisible gap
+                    
+                    const newRect = c.getBoundingClientRect();
+                    const oldRect = oldRects.get(c);
+                    const moveY = oldRect.top - newRect.top;
+                    
+                    if (moveY !== 0) {
+                        // Instantly reverse the move visually
+                        c.style.transition = 'none';
+                        c.style.transform = `translateY(${moveY}px)`;
+                        
+                        // Force the browser to render this reversed state
+                        c.offsetHeight; 
+                        
+                        // Smoothly glide into the new real position
+                        c.style.transition = 'transform 0.3s ease';
+                        c.style.transform = 'translateY(0)';
+                    }
+                });
             }
         }, {passive: false});
 
         container.addEventListener('touchend', (e) => {
-            if (!draggedItem) return;
+            if (!ghostItem) return;
             
-            container.insertBefore(draggedItem, placeholder);
-            placeholder.remove();
-            placeholder = null;
+            // Cleanup
+            ghostItem.remove();
+            ghostItem = null;
             
-            draggedItem.style.position = '';
-            draggedItem.style.top = '';
-            draggedItem.style.left = '';
-            draggedItem.style.width = '';
-            draggedItem.style.margin = '';
-            draggedItem.classList.remove('dragging');
+            draggedItem.classList.remove('placeholder');
             draggedItem = null;
+            document.body.style.overflow = '';
             
-            const currentCards = Array.from(container.querySelectorAll('.book-card:not(.placeholder)'));
+            // Save newly ordered layout
+            const currentCards = Array.from(container.querySelectorAll('.book-card'));
             const newOrder = currentCards.map(card => parseInt(card.dataset.id));
             localStorage.setItem('wowBooksOrder', JSON.stringify(newOrder));
             
