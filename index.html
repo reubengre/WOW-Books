@@ -28,6 +28,11 @@
             -webkit-tap-highlight-color: transparent;
         }
 
+        html, body {
+            /* Prevents pull-to-refresh black bars on mobile */
+            overscroll-behavior-y: none;
+        }
+
         body {
             font-family: system-ui, -apple-system, sans-serif;
             background-color: var(--bg-color);
@@ -126,6 +131,7 @@
             position: relative;
             cursor: pointer;
             box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            /* Box-shadow transition kept; transform transition handled via JS */
             transition: box-shadow 0.2s ease;
         }
 
@@ -211,7 +217,7 @@
             background-color: #0b0c10;
         }
         .book-card:not(.minimized) .bg-blur {
-            position: fixed; /* Lock background during scroll */
+            position: fixed; 
             filter: blur(40px) brightness(0.2);
         }
         .book-card:not(.minimized) .book-cover {
@@ -222,7 +228,7 @@
             flex-shrink: 0;
         }
         .book-card:not(.minimized) .book-cover img {
-            object-fit: contain; /* Don't crop the art in full screen */
+            object-fit: contain; 
             padding: 16px;
             background: rgba(0,0,0,0.6);
         }
@@ -230,7 +236,7 @@
             display: none;
         }
         .book-card:not(.minimized) .card-indicator {
-            font-size: 2rem; /* Make the 'X' easy to tap */
+            font-size: 2rem; 
             color: #fff;
         }
         .book-card:not(.minimized) .book-title {
@@ -386,7 +392,6 @@
     <main class="book-list" id="bookContainer"></main>
 
     <script>
-        // Specific font colors extracted to match official book cover text
         const colorSilver = "#c0c5ce";
         const colorGold = "#f0c265";
         const colorIce = "#84cce3";
@@ -394,14 +399,11 @@
         const colorFire = "#d65a31";
 
         let books = [
-            // The Foundations
             { id: 1, title: "Rise of the Horde", titleColor: colorSilver, category: "The Foundations", author: "Christie Golden", date: "Dec 2006", rating: "4.21", synopsis: "Before the Dark Portal opened, the Orcs were a shamanic society on Draenor. Details their tragic fall into bloodlust orchestrated by the Burning Legion.", cover: "Images/rise-of-the-horde.jpg" },
             { id: 2, title: "The Last Guardian", titleColor: colorSilver, category: "The Foundations", author: "Jeff Grubb", date: "Dec 2001", rating: "4.12", synopsis: "The wizard Medivh struggles against a dark presence. His apprentice, Khadgar, must uncover his secrets as the Horde pours into Azeroth.", cover: "Images/the-last-guardian.jpg" },
             { id: 3, title: "Tides of Darkness", titleColor: colorGold, category: "The Foundations", author: "Aaron Rosenberg", date: "Aug 2007", rating: "4.15", synopsis: "Following the fall of Stormwind, survivors flee to Lordaeron to forge a grand Alliance and halt the Orcish Horde's march.", cover: "Images/tides-of-darkness.jpg" },
             { id: 4, title: "Beyond the Dark Portal", titleColor: colorGold, category: "The Foundations", author: "Aaron Rosenberg & Christie Golden", date: "Apr 2008", rating: "4.13", synopsis: "The Alliance expedition pushes through the portal into Draenor to stop the orcish threat at its source.", cover: "Images/beyond-the-dark-portal.jpg" },
             { id: 5, title: "Day of the Dragon", titleColor: colorGold, category: "The Foundations", author: "Richard A. Knaak", date: "Feb 2001", rating: "4.05", synopsis: "Set after the Second War, focusing on the mage Rhonin and the liberation of the Dragonqueen Alexstrasza from the Dragonmaw Clan.", cover: "Images/day-of-the-dragon.jpg" },
-            
-            // Time Travel & Third War
             { id: 6, title: "The Well of Eternity", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Mar 2004", rating: "4.20", synopsis: "Modern heroes are cast 10,000 years into the past during the Burning Legion's first invasion of Azeroth.", cover: "Images/the-well-of-eternity.jpg" },
             { id: 7, title: "The Demon Soul", titleColor: colorFire, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Oct 2004", rating: "4.22", synopsis: "Part two of the War of the Ancients. Deathwing's betrayal is revealed as the defenders of Azeroth struggle to survive.", cover: "Images/the-demon-soul.jpg" },
             { id: 8, title: "The Sundering", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Richard A. Knaak", date: "Jul 2005", rating: "4.26", synopsis: "The conclusion to the War of the Ancients. The Well of Eternity collapses, reshaping the continents of Azeroth forever.", cover: "Images/the-sundering.jpg" },
@@ -409,8 +411,6 @@
             { id: 10, title: "Of Blood and Honor", titleColor: colorSilver, category: "Time Travel & 3rd War", author: "Chris Metzen", date: "Jan 2001", rating: "4.03", synopsis: "The paladin Tirion Fordring risks everything when he makes a fateful connection with the honorable orc Eitrigg.", cover: "Images/of-blood-and-honor.jpg" },
             { id: 11, title: "Arthas: Rise of the Lich King", titleColor: colorIce, category: "Time Travel & 3rd War", author: "Christie Golden", date: "Apr 2009", rating: "4.35", synopsis: "Prince Arthas Menethil makes terrible sacrifices to save his people, a tragic path that leads him to the Frozen Throne.", cover: "Images/arthas-rise-of-the-lich-king.jpg" },
             { id: 12, title: "Illidan", titleColor: colorFel, category: "Time Travel & 3rd War", author: "William King", date: "Apr 2016", rating: "4.24", synopsis: "Follows Illidan Stormrage from his release in Warcraft III through his rule over Outland.", cover: "Images/illidan.jpg" },
-            
-            // The MMO Era
             { id: 13, title: "Cycle of Hatred", titleColor: colorSilver, category: "The MMO Era", author: "Keith R.A. DeCandido", date: "Jan 2006", rating: "3.55", synopsis: "Set shortly before Vanilla WoW, exploring the fragile peace between the Horde and Alliance in Kalimdor.", cover: "Images/cycle-of-hatred.jpg" },
             { id: 14, title: "Night of the Dragon", titleColor: colorSilver, category: "The MMO Era", author: "Richard A. Knaak", date: "Nov 2008", rating: "3.95", synopsis: "A sequel to Day of the Dragon, returning to Grim Batol to face the sinister Twilight Dragonflight.", cover: "Images/night-of-the-dragon.jpg" },
             { id: 15, title: "Stormrage", titleColor: "#87c773", category: "The MMO Era", author: "Richard A. Knaak", date: "Feb 2010", rating: "3.90", synopsis: "Malfurion Stormrage is trapped in the Emerald Nightmare, and his allies must fight to awaken him before the corruption spreads.", cover: "Images/stormrage.jpg" },
@@ -459,7 +459,6 @@
             localStorage.setItem('wowBooksHidden', JSON.stringify(hiddenStatus));
             localStorage.setItem('wowBooksMin', JSON.stringify(minStatus));
             
-            // Check if any book is currently unminimized (full screen) and lock background scroll
             const isAnyExpanded = Object.values(minStatus).includes(false);
             document.body.style.overflow = isAnyExpanded ? 'hidden' : '';
         }
@@ -519,7 +518,7 @@
                     container.appendChild(card);
                 }
             });
-            saveState(); // Ensure body scroll lock applies on search refresh
+            saveState(); 
         }
 
         window.handleCardClick = function(event, id) {
@@ -546,7 +545,6 @@
             saveState();
             renderBooks();
             
-            // If opening a book, automatically scroll to top of that view
             if (!minStatus[id]) {
                 setTimeout(() => {
                     const expandedCard = document.querySelector(`.book-card[data-id="${id}"]`);
@@ -568,7 +566,7 @@
             renderBooks();
         };
 
-        // Smooth Drag & Drop Animation Logic
+        // FLIP Animation Drag & Drop Logic
         let draggedItem = null;
         let placeholder = null;
         let startY = 0;
@@ -582,7 +580,7 @@
                 placeholder.className = 'book-card placeholder';
                 placeholder.style.height = rect.height + 'px';
                 
-                draggedItem.parentNode.insertBefore(placeholder, draggedItem);
+                container.insertBefore(placeholder, draggedItem);
                 
                 draggedItem.style.position = 'fixed';
                 draggedItem.style.top = rect.top + 'px';
@@ -592,7 +590,6 @@
                 draggedItem.classList.add('dragging');
                 
                 startY = e.touches[0].clientY;
-                document.body.style.overflow = 'hidden';
             }
         }, {passive: false});
 
@@ -610,7 +607,38 @@
                 if (targetCard) {
                     const rect = targetCard.getBoundingClientRect();
                     const next = (touch.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
-                    container.insertBefore(placeholder, next ? targetCard.nextSibling : targetCard);
+                    const nextSibling = next ? targetCard.nextSibling : targetCard;
+
+                    // If the placeholder needs to move to a new slot
+                    if (placeholder.nextSibling !== nextSibling) {
+                        
+                        // FLIP: Calculate current positions of all static cards
+                        const staticCards = Array.from(container.querySelectorAll('.book-card:not(.dragging)'));
+                        const rects = new Map();
+                        staticCards.forEach(c => rects.set(c, c.getBoundingClientRect()));
+                        
+                        // Move the placeholder
+                        container.insertBefore(placeholder, nextSibling);
+                        
+                        // FLIP: Animate cards from old positions to new ones
+                        staticCards.forEach(c => {
+                            const oldRect = rects.get(c);
+                            const newRect = c.getBoundingClientRect();
+                            const moveY = oldRect.top - newRect.top;
+                            
+                            if (moveY !== 0) {
+                                c.style.transform = `translateY(${moveY}px)`;
+                                c.style.transition = 'none';
+                                
+                                requestAnimationFrame(() => {
+                                    requestAnimationFrame(() => {
+                                        c.style.transform = '';
+                                        c.style.transition = 'transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1)';
+                                    });
+                                });
+                            }
+                        });
+                    }
                 }
             }
         }, {passive: false});
@@ -631,9 +659,6 @@
             draggedItem.style.pointerEvents = '';
             draggedItem.classList.remove('dragging');
             draggedItem = null;
-            
-            const isAnyExpanded = Object.values(minStatus).includes(false);
-            document.body.style.overflow = isAnyExpanded ? 'hidden' : '';
             
             const currentCards = Array.from(container.querySelectorAll('.book-card:not(.placeholder)'));
             const newOrder = currentCards.map(card => parseInt(card.dataset.id));
